@@ -71,6 +71,7 @@ int uart_rx(SerialHandle handle, char *data, int len, int timeout_ms)
 	struct termios options;
 	int l = len;
 	
+	// enable timeout
 	tcgetattr(handle, &options);
 	options.c_cc[VTIME] = timeout_ms / 100;
 	options.c_cc[VMIN] = 0;
@@ -91,6 +92,14 @@ int uart_rx(SerialHandle handle, char *data, int len, int timeout_ms)
 }
 int uart_rx_raw(SerialHandle handle, char *data, int len)
 {
+	struct termios options;
+
+	// disable timeout
+	tcgetattr(handle, &options);
+	options.c_cc[VTIME] = 0;
+	options.c_cc[VMIN] = 0;
+	tcsetattr(handle, TCSANOW, &options);
+
 	int rread = read(handle, data, len);
 	
 	return rread;
