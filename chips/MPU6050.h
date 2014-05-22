@@ -16,6 +16,9 @@
 
 #define MPU6050_FIFO_EN      0x23
 
+#define MPU6050_INT_PIN_CFG  0x37
+#define MPU6050_INT_ENABLE   0x38
+
 #define MPU6050_ACCEL_XOUT_H 0x3b
 #define MPU6050_ACCEL_XOUT_L 0x3c
 #define MPU6050_ACCEL_YOUT_H 0x3d
@@ -70,12 +73,25 @@
 #define MPU6050_FIFO_EN_SLV1_FIFO_EN  0x02
 #define MPU6050_FIFO_EN_SLV0_FIFO_EN  0x01
 
+#define MPU6050_INT_PIN_CFG_INT_LEVEL       0x80
+#define MPU6050_INT_PIN_CFG_INT_OPEN        0x40
+#define MPU6050_INT_PIN_CFG_LATCH_INT_EN    0x20
+#define MPU6050_INT_PIN_CFG_INT_RD_CLEAR    0x10
+#define MPU6050_INT_PIN_CFG_FSYNC_INT_LEVEL 0x08
+#define MPU6050_INT_PIN_CFG_FSYNC_INT_EN    0x04
+#define MPU6050_INT_PIN_CFG_I2C_BYPASS_EN   0x02
+
+#define MPU6050_INT_ENABLE_MOT_EN         0x40
+#define MPU6050_INT_ENABLE_FIFO_OFLOW_EN  0x10
+#define MPU6050_INT_ENABLE_I2C_MST_INT_EN 0x08
+#define MPU6050_INT_ENABLE_DATA_RDY_EN    0x01
+
 #define MPU6050_USER_CTRL_FIFO_EN        0x40
 #define MPU6050_USER_CTRL_I2C_MST_EN     0x20
 #define MPU6050_USER_CTRL_I2C_IF_DIS     0x10
-#define MPU6050_USER_CTRL_FIFO_RESET     0x40
-#define MPU6050_USER_CTRL_I2C_MST_RESET  0x20
-#define MPU6050_USER_CTRL_SIG_COND_RESET 0x10
+#define MPU6050_USER_CTRL_FIFO_RESET     0x04
+#define MPU6050_USER_CTRL_I2C_MST_RESET  0x02
+#define MPU6050_USER_CTRL_SIG_COND_RESET 0x01
 
 #define MPU6050_PWR1_DEVICE_RESET  0x80
 #define MPU6050_PWR1_SLEEP         0x40
@@ -141,8 +157,19 @@ uint8_t mpu6050EnableCycle(uint8_t enable);
 uint8_t mpu6050DisableTemp(uint8_t enable);
 uint8_t mpu6050EnableAccelSelfTest(uint8_t enable);
 uint8_t mpu6050EnableGyroSelfTest(uint8_t enable);
+
+uint8_t mpu6050SetInterruptMode(uint8_t activeLow);
+uint8_t mpu6050SetInterruptDrive(uint8_t openDrain);
+uint8_t mpu6050SetInterruptLatch(uint8_t latch);
+uint8_t mpu6050SetInterruptLatchClear(uint8_t clear);
+
+uint8_t mpu6050SetIntFIFOBufferOverflowEnabled(uint8_t enabled);
+uint8_t mpu6050SetIntDataReadyEnabled(uint8_t enabled);
+
+uint8_t mpu6050ResetFIFO();
 uint8_t mpu6050EnableFIFO(uint8_t accel, uint8_t gyro);
 int16_t mpu6050GetFIFOCount();
+
 uint8_t mpu6050PerformDeviceReset();
 uint8_t mpu6050IsBeingDeviceReset(uint8_t* res);
 uint8_t mpu6050GetData(MPU6050_Data* data);
