@@ -2,6 +2,7 @@
 
 #include <i2c.h>
 #include <myprintf.h>
+#include <delay.h>
 
 #define SWAP16(x) (((x & 0x00ff) << 8) | ((x & 0xff00) >> 8))
 
@@ -130,15 +131,21 @@ uint8_t mpu6050EnableAccelSelfTest(uint8_t enable)
 		
 	return MPU6050_SUCCESS;
 }
+uint8_t mpu6050ResetFIFO()
+{
+	if (mpu6050WriteBit(MPU6050_USER_CTRL, MPU6050_USER_CTRL_FIFO_RESET, 1))    return MPU6050_ERROR;
+	return MPU6050_SUCCESS;
+}
 uint8_t mpu6050EnableFIFO(uint8_t accel, uint8_t gyro)
 {
-	if (mpu6050WriteBit(MPU6050_USER_CTRL, MPU6050_USER_CTRL_FIFO_EN, 1))       return MPU6050_ERROR;
-	if (mpu6050WriteBit(MPU6050_USER_CTRL, MPU6050_USER_CTRL_FIFO_RESET, 1))    return MPU6050_ERROR;
-	
 	if (mpu6050WriteBit(MPU6050_FIFO_EN, MPU6050_FIFO_EN_XG_FIFO_EN, gyro))     return MPU6050_ERROR;
 	if (mpu6050WriteBit(MPU6050_FIFO_EN, MPU6050_FIFO_EN_YG_FIFO_EN, gyro))     return MPU6050_ERROR;
 	if (mpu6050WriteBit(MPU6050_FIFO_EN, MPU6050_FIFO_EN_ZG_FIFO_EN, gyro))     return MPU6050_ERROR;
 	if (mpu6050WriteBit(MPU6050_FIFO_EN, MPU6050_FIFO_EN_ACCEL_FIFO_EN, accel)) return MPU6050_ERROR;
+
+	if (mpu6050WriteBit(MPU6050_USER_CTRL, MPU6050_USER_CTRL_FIFO_EN, 0))       return MPU6050_ERROR;
+	mpu6050WriteBit(MPU6050_USER_CTRL, MPU6050_USER_CTRL_FIFO_RESET, 1);
+	if (mpu6050WriteBit(MPU6050_USER_CTRL, MPU6050_USER_CTRL_FIFO_EN, 1))       return MPU6050_ERROR;
 	
 	return MPU6050_SUCCESS;
 }
@@ -153,6 +160,33 @@ int16_t mpu6050GetFIFOCount()
 uint8_t mpu6050EnableGyroSelfTest(uint8_t enable)
 {
 }
+
+uint8_t mpu6050SetInterruptMode(uint8_t activeLow)
+{
+	return mpu6050WriteBit(MPU6050_INT_PIN_CFG, MPU6050_INT_PIN_CFG_INT_LEVEL, activeLow);
+}
+uint8_t mpu6050SetInterruptDrive(uint8_t openDrain)
+{
+	return mpu6050WriteBit(MPU6050_INT_PIN_CFG, MPU6050_INT_PIN_CFG_INT_OPEN, openDrain);
+}
+uint8_t mpu6050SetInterruptLatch(uint8_t latch)
+{
+	return mpu6050WriteBit(MPU6050_INT_PIN_CFG, MPU6050_INT_PIN_CFG_LATCH_INT_EN, latch);
+}
+uint8_t mpu6050SetInterruptLatchClear(uint8_t clear)
+{
+	return mpu6050WriteBit(MPU6050_INT_PIN_CFG, MPU6050_INT_PIN_CFG_INT_RD_CLEAR, clear);
+}
+
+uint8_t mpu6050SetIntFIFOBufferOverflowEnabled(uint8_t enabled)
+{
+	return mpu6050WriteBit(MPU6050_INT_ENABLE, MPU6050_INT_ENABLE_FIFO_OFLOW_EN, enabled);
+}
+uint8_t mpu6050SetIntDataReadyEnabled(uint8_t enabled)
+{
+	return mpu6050WriteBit(MPU6050_INT_ENABLE, MPU6050_INT_ENABLE_DATA_RDY_EN, enabled);
+}
+
 uint8_t mpu6050PerformDeviceReset()
 {
 	uint8_t reg;
