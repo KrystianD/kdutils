@@ -222,6 +222,18 @@ uint8_t mpu6050GetData(MPU6050_Data* data)
 	data->gz = SWAP16(data->gz);
 	return MPU6050_SUCCESS;
 }
+uint8_t mpu6050BufferToData(uint8_t* buf, MPU6050_Data* data)
+{
+	memcpy(data, buf, sizeof(*data));
+	data->ax = SWAP16(data->ax);
+	data->ay = SWAP16(data->ay);
+	data->az = SWAP16(data->az);
+	data->temp = SWAP16(data->temp);
+	data->gx = SWAP16(data->gx);
+	data->gy = SWAP16(data->gy);
+	data->gz = SWAP16(data->gz);
+	return MPU6050_SUCCESS;
+}
 uint8_t mpu6050GetDataFIFOGyro(MPU6050_Data* data)
 {
 	if (mpu6050I2CReadCommand(MPU6050_FIFO_R_W, (uint8_t*)&data->gx, 6))

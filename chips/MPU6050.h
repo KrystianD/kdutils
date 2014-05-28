@@ -173,6 +173,7 @@ int16_t mpu6050GetFIFOCount();
 uint8_t mpu6050PerformDeviceReset();
 uint8_t mpu6050IsBeingDeviceReset(uint8_t* res);
 uint8_t mpu6050GetData(MPU6050_Data* data);
+uint8_t mpu6050BufferToData(uint8_t* buf, MPU6050_Data* data);
 uint8_t mpu6050GetDataFIFOGyro(MPU6050_Data* data);
 uint8_t mpu6050GetDataFIFOAccelGyro(MPU6050_Data* data);
 uint16_t mpu6050GetTemp(MPU6050_Data* data);  // temp in 0.1
