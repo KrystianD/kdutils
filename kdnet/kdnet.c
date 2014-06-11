@@ -294,6 +294,7 @@ void kdnet_cb_onChannelBusy()
 	kdnet_syncReceivedTime = getTicks();
 	// kdnet_syncs++;
 	// myprintf ("sync!...\r\n");
+	KDNET_DEBUG("busy");
 	// rfm69PrintStatus ();
 	kdnet_setChannelBusy();
 }

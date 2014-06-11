@@ -105,6 +105,10 @@ uint8_t rfm69ReadPayload(uint8_t* data, uint8_t len)
 {
 	rfm69SPIReadCommand(RFM69_FIFO, data, len);
 }
+uint8_t rfm69WritePayload(const uint8_t* data, uint8_t len)
+{
+	rfm69SPISendCommand(RFM69_FIFO, data, len);
+}
 
 
 

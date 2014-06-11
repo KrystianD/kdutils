@@ -14,15 +14,19 @@ uint16_t kdnet_driver_getMaxPayloadLength()
 }
 void kdnet_driver_setIdleMode()
 {
+	rfm69SwitchToStandby();
 }
 void kdnet_driver_setTxMode()
 {
+	rfm69SwitchToTx();
 }
 void kdnet_driver_setRxMode()
 {
+	rfm69SwitchToRx();
 }
 void kdnet_driver_writePayload(const uint8_t* data, uint16_t len)
 {
+	rfm69WritePayload(data, len);
 }
 void kdnet_driver_readPayload(uint8_t* data, uint16_t* len)
 {
