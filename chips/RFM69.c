@@ -6,37 +6,27 @@
 #define RFM69_DEBUG(x,...)
 #endif
 
-void rfm69SetHighPower(uint8_t on);
+void rfm69_setHighPower(uint8_t on);
 
 static void rfWriteRegData(uint8_t addr, const uint8_t* data, uint8_t len)
 {
 	rfm69SPISendCommand(addr, data, len);
-}
-static void rfWriteReg(uint8_t addr, uint8_t value)
-{
-	rfm69SPISendCommand(addr, &value, 1);
-}
-static uint8_t rfReadReg(uint8_t addr)
-{
-	uint8_t data;
-	rfm69SPIReadCommand(addr, &data, 1);
-	return data;
 }
 
 uint8_t rfm69SetFrequency(uint32_t freq)
 {
 	freq /= RFM69_FSTEP;
 	// RFM69_DEBUG ("freq 0x%04x\r\n", freq);
-	rfWriteReg(RFM69_FRFMSB, (freq >> 16) & 0xff);
-	rfWriteReg(RFM69_FRFMID, (freq >> 8) & 0xff);
-	rfWriteReg(RFM69_FRFLSB, (freq >> 0) & 0xff);
+	rfm69WriteRegister(RFM69_FRFMSB, (freq >> 16) & 0xff);
+	rfm69WriteRegister(RFM69_FRFMID, (freq >> 8) & 0xff);
+	rfm69WriteRegister(RFM69_FRFLSB, (freq >> 0) & 0xff);
 	return 0;
 }
 uint8_t rfm69SetFrequencyByte(uint32_t freq)
 {
-	rfWriteReg(RFM69_FRFMSB, freq >> 16);
-	rfWriteReg(RFM69_FRFMID, freq >> 8);
-	rfWriteReg(RFM69_FRFLSB, freq >> 0);
+	rfm69WriteRegister(RFM69_FRFMSB, freq >> 16);
+	rfm69WriteRegister(RFM69_FRFMID, freq >> 8);
+	rfm69WriteRegister(RFM69_FRFLSB, freq >> 0);
 	return 0;
 }
 uint8_t rfm69SetBitRate(uint32_t bitrate)
@@ -44,87 +34,90 @@ uint8_t rfm69SetBitRate(uint32_t bitrate)
 	bitrate = (2 * RFM69_FXOSC / bitrate + 1) >> 1;
 	// RFM69_DEBUG ("bitrate 0x%04x\r\n", bitrate);
 	
-	rfWriteReg(RFM69_BITRATEMSB, (bitrate >> 8) & 0xff);
-	rfWriteReg(RFM69_BITRATELSB, (bitrate >> 0) & 0xff);
+	rfm69WriteRegister(RFM69_BITRATEMSB, (bitrate >> 8) & 0xff);
+	rfm69WriteRegister(RFM69_BITRATELSB, (bitrate >> 0) & 0xff);
+	return 0;
 }
 uint8_t rfm69SetSyncWord(uint8_t len, uint8_t* data)
 {
 	if (len == 0)
 	{
-		rfWriteReg(RFM69_SYNCCONFIG, RFM69_SYNC_OFF);
+		rfm69WriteRegister(RFM69_SYNCCONFIG, RFM69_SYNC_OFF);
 	}
 	else
 	{
 		int i;
-		rfWriteReg(RFM69_SYNCCONFIG,
-		           RFM69_SYNC_ON | ((len - 1) << 3));
+		rfm69WriteRegister(RFM69_SYNCCONFIG, RFM69_SYNC_ON | ((len - 1) << 3));
 		for (i = 0; i < len; i++)
-			rfWriteReg(RFM69_SYNCVALUE1 + i, *data++);
+			rfm69WriteRegister(RFM69_SYNCVALUE1 + i, *data++);
 	}
 	return 0;
 }
 uint8_t rfm69SetPreambleSize(uint8_t len)
 {
-	rfWriteReg(RFM69_PREAMBLEMSB, (len >> 8) & 0xff);
-	rfWriteReg(RFM69_PREAMBLELSB, (len >> 0) & 0xff);
+	rfm69WriteRegister(RFM69_PREAMBLEMSB, (len >> 8) & 0xff);
+	rfm69WriteRegister(RFM69_PREAMBLELSB, (len >> 0) & 0xff);
+	return 0;
 }
 uint8_t rfm69SetDeviation(uint32_t deviation)
 {
 	deviation /= RFM69_FSTEP;
-	rfWriteReg(RFM69_FDEVMSB, (deviation >> 8) & 0xff);
-	rfWriteReg(RFM69_FDEVLSB, (deviation >> 0) & 0xff);
+	rfm69WriteRegister(RFM69_FDEVMSB, (deviation >> 8) & 0xff);
+	rfm69WriteRegister(RFM69_FDEVLSB, (deviation >> 0) & 0xff);
+	return 0;
 }
 uint8_t rfm69SetOutputPower(uint8_t power)
 {
-	uint8_t val = rfReadReg(RFM69_PALEVEL);
-	rfWriteReg(RFM69_PALEVEL, (val & 0xe0) | power);
+	uint8_t val = rfm69ReadRegister(RFM69_PALEVEL);
+	rfm69WriteRegister(RFM69_PALEVEL, (val & 0xe0) | power);
+	return 0;
 }
 uint8_t rfm69SetRSSIThreshold(int16_t rssi)
 {
-	rfWriteReg(RFM69_RSSITHRESH, -rssi * 2);
+	rfm69WriteRegister(RFM69_RSSITHRESH, -rssi * 2);
+	return 0;
 }
 
 void rfm69SwitchToSleep()
 {
-	rfWriteReg(RFM69_OPMODE, RFM69_OPMODE_SLEEP);
+	rfm69WriteRegister(RFM69_OPMODE, RFM69_OPMODE_SLEEP);
 }
 void rfm69SwitchToStandby()
 {
-	rfWriteReg(RFM69_OPMODE, RFM69_OPMODE_STANDBY);
+	rfm69WriteRegister(RFM69_OPMODE, RFM69_OPMODE_STANDBY);
 }
 void rfm69SwitchToTx()
 {
-	rfWriteReg(RFM69_OPMODE, RFM69_OPMODE_TRANSMITTER);
-	rfm69SetHighPower(1);
+	rfm69WriteRegister(RFM69_OPMODE, RFM69_OPMODE_TRANSMITTER);
+	rfm69_setHighPower(1);
 }
 void rfm69SwitchToRx()
 {
-	rfWriteReg(RFM69_OPMODE, RFM69_OPMODE_RECEIVER);
-	rfm69SetHighPower(0);
+	rfm69WriteRegister(RFM69_OPMODE, RFM69_OPMODE_RECEIVER);
+	rfm69_setHighPower(0);
 }
 uint8_t rfm69IsReady()
 {
-	return rfReadReg(RFM69_IRQFLAGS1) & RFM69_IRQFLAGS1_MODEREADY;
+	return rfm69ReadRegister(RFM69_IRQFLAGS1) & RFM69_IRQFLAGS1_MODEREADY;
 }
 
-void rfm69SetHighPower(uint8_t on)
+uint8_t rfm69ReadPayload(uint8_t* data, uint8_t len)
 {
-	rfWriteReg(RFM69_OCP, on ? 0x0f : 0x10 | 0b1010);  // default
-	rfWriteReg(RFM69_TESTPA1, on ? 0x5d : 0x55);
-	rfWriteReg(RFM69_TESTPA2, on ? 0x7c : 0x70);
+	rfm69SPIReadCommand(RFM69_FIFO, data, len);
 }
+
 
 
 int16_t rfm69GetRSSI()
 {
-	return -rfReadReg(RFM69_RSSIVALUE) / 2;
+	return -rfm69ReadRegister(RFM69_RSSIVALUE) / 2;
 }
 
 void rfm69PrintStatus()
 {
-	uint8_t op = rfReadReg(RFM69_OPMODE);
-	uint8_t irq1 = rfReadReg(RFM69_IRQFLAGS1);
-	uint8_t irq2 = rfReadReg(RFM69_IRQFLAGS2);
+	uint8_t op = rfm69ReadRegister(RFM69_OPMODE);
+	uint8_t irq1 = rfm69ReadRegister(RFM69_IRQFLAGS1);
+	uint8_t irq2 = rfm69ReadRegister(RFM69_IRQFLAGS2);
 	
 	RFM69_DEBUG("op: 0x%02x: ", op);
 	
@@ -171,4 +164,22 @@ void rfm69PrintStatus()
 	if (irq2 & RFM69_IRQFLAGS2_CRCOK) RFM69_DEBUG("CrcOk, ");
 	
 	RFM69_DEBUG("\r\n");
+}
+
+void rfm69WriteRegister(uint8_t addr, uint8_t value)
+{
+	rfm69SPISendCommand(addr, &value, 1);
+}
+uint8_t rfm69ReadRegister(uint8_t addr)
+{
+	uint8_t data;
+	rfm69SPIReadCommand(addr, &data, 1);
+	return data;
+}
+
+void rfm69_setHighPower(uint8_t on)
+{
+	rfm69WriteRegister(RFM69_OCP, on ? 0x0f : 0x10 | 0b1010);  // default
+	rfm69WriteRegister(RFM69_TESTPA1, on ? 0x5d : 0x55);
+	rfm69WriteRegister(RFM69_TESTPA2, on ? 0x7c : 0x70);
 }

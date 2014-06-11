@@ -7,8 +7,11 @@
 #include <sys/types.h>
 #include <string.h>
 
+extern "C"
+{
 uint32_t getTicks();
 uint32_t getTicksUS();
+}
 std::string getErrnoString();
 
 std::vector<std::string> explode(const std::string& str, const std::string& delim, size_t maxCount = 0, size_t start = 0);
