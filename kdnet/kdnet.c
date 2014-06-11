@@ -6,10 +6,6 @@
 #define KDNET_DEBUG(x,...)
 #endif
 
-// #include "rfm69.h"
-// #include "rfm69_defs.h"
-// #include <RFM22_printstatus.h>
-
 uint32_t kdnet_sendId, kdnet_recvId;
 uint32_t kdnet_sendTime, kdnet_packetSendTime, kdnet_lastRead = 0;
 uint32_t kdnet_preambleTime;
@@ -43,22 +39,6 @@ void* memcpy(void* s1, const void* s2, unsigned int n)
 		*dst++ = *src++;
 	return s1;
 }
-// void kdnet_writeReg(uint8_t addr, uint8_t value)
-// {
-// rfm69SendCommand(addr | 0x80, &value, 1);
-// }
-// uint8_t kdnet_readReg(uint8_t addr)
-// {
-// uint8_t data[1];
-// rfm69ReadCommand(addr & ~0x80, data, 1);
-// return data[0];
-// }
-// uint8_t kdnet_writeRegCheck(uint8_t addr, uint8_t value)
-// {
-// kdnet_writeReg(addr, value);
-// uint8_t val = kdnet_readReg(addr);
-// return val == value ? KDNET_SUCCESS : KDNET_ERROR;
-// }
 
 uint8_t kdnet_readPacket();
 uint8_t kdnet_writePacket();
@@ -102,7 +82,6 @@ uint8_t kdnetProcess()
 	case KDNET_STATE_SENDING:
 		if (getTicks() - kdnet_sendTime > (KDNET_TYPICAL_SEND_TIME) * 2)
 		{
-			// rfm69PrintStatus ();
 			kdnet_driver_setIdleMode();
 			KDNET_DEBUG("wait...\r\n");
 			kdnet_retries++;
@@ -132,7 +111,6 @@ uint8_t kdnetProcess()
 uint8_t kdnet_readPacket()
 {
 	uint8_t data[KDNET_MAX_PACKET_LEN];
-	// rfm69ReadCommand(RFM69_FIFO, data, PKLEN);
 	uint16_t payloadLen;
 	kdnet_driver_readPayload(data, &payloadLen);
 	
@@ -152,15 +130,9 @@ uint8_t kdnet_writePacket()
 {
 	uint8_t data[KDNET_MAX_PACKET_LEN];
 	
-	// memset(data, 0xaa, PKLEN);
 	memcpy(data, &kdnet_sendHeader, sizeof(TKDNETHeader));
 	memcpy(data + sizeof(TKDNETHeader), kdnet_sendData, kdnet_sendLen);
 	
-	// rfm69SendCommand (0x00, &kdnet_sendHeader, sizeof(TKDNETHeader));
-	// rfm69SendCommand (0x00, kdnet_sendData, kdnet_sendLen);
-	// while (!rfm69IsReady ())
-	// myprintf("wa\r\n");
-	// rfm69SendCommand(RFM69_FIFO, data, PKLEN);
 	kdnet_driver_writePayload(data, KDNET_MAX_PACKET_LEN);
 	kdnet_driver_setTxMode();
 	
@@ -168,7 +140,6 @@ uint8_t kdnet_writePacket()
 	
 	KDNET_DEBUG("Set module to send datagram from 0x%02x to 0x%02x id %d of length: %d",
 	            kdnet_sendHeader.addrFrom, kdnet_sendHeader.addrTo, kdnet_sendHeader.id, kdnet_sendLen);
-	// KDNET_DEBUG("Set datagram");// from 0x%08x to 0x%08x of length: %d", addrFrom, addrTo, len);
 	kdnet_state = KDNET_STATE_SENDING;
 	
 	return KDNET_SUCCESS;
@@ -295,7 +266,6 @@ void kdnet_cb_onChannelBusy()
 	// kdnet_syncs++;
 	// myprintf ("sync!...\r\n");
 	KDNET_DEBUG("busy");
-	// rfm69PrintStatus ();
 	kdnet_setChannelBusy();
 }
 void kdnet_cb_onPacketSent()
