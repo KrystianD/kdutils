@@ -80,10 +80,11 @@ uint8_t kdnetProcess()
 	case KDNET_STATE_NONE:
 		break;
 	case KDNET_STATE_SENDING:
-		if (getTicks() - kdnet_sendTime > (KDNET_TYPICAL_SEND_TIME) * 2)
+		if (getTicks() - kdnet_sendTime > KDNET_TYPICAL_SEND_TIME * 2)
 		{
+			KDNET_DEBUG("Sending timeouted");
+			for(;;);
 			kdnet_driver_setIdleMode();
-			KDNET_DEBUG("wait...\r\n");
 			kdnet_retries++;
 			kdnet_writePacket();
 		}
@@ -96,7 +97,7 @@ uint8_t kdnetProcess()
 	// }
 	// break;
 	case KDNET_STATE_RECEIVING:
-		if (kdnet_syncReceived && getTicks() - kdnet_syncReceivedTime >= (KDNET_TYPICAL_SEND_TIME) * 2)
+		if (kdnet_syncReceived && getTicks() - kdnet_syncReceivedTime >= KDNET_TYPICAL_SEND_TIME * 2)
 		{
 			kdnet_syncNoPayload++;
 			kdnet_driver_setIdleMode();
@@ -120,7 +121,6 @@ uint8_t kdnet_readPacket()
 	
 	memcpy(&kdnet_recvHeader, data, sizeof(TKDNETHeader));
 	memcpy(kdnet_recvData, data + sizeof(TKDNETHeader), payloadLen - sizeof(TKDNETHeader) - 2);
-	// memset (kdnet_recvData, 0xcc, PKLEN - sizeof(TKDNETHeader) - 2);
 	
 	kdnet_lastRead = getTicks();
 	
@@ -133,6 +133,7 @@ uint8_t kdnet_writePacket()
 	memcpy(data, &kdnet_sendHeader, sizeof(TKDNETHeader));
 	memcpy(data + sizeof(TKDNETHeader), kdnet_sendData, kdnet_sendLen);
 	
+	kdnet_driver_setIdleMode();
 	kdnet_driver_writePayload(data, KDNET_MAX_PACKET_LEN);
 	kdnet_driver_setTxMode();
 	
@@ -206,7 +207,7 @@ uint8_t kdnetSendTo(uint8_t addrFrom, uint8_t addrTo, uint8_t* data, uint8_t len
 	kdnet_sendLen = len;
 	kdnet_retries = 0;
 	kdnet_state = KDNET_STATE_TOSEND;
-	
+
 	kdnet_writePacket();
 	
 	return KDNET_SUCCESS;
@@ -238,27 +239,6 @@ uint8_t kdnetClear()
 	kdnet_recvAvail = 0;
 }
 
-// uint16_t kdnetCRC16Update (uint16_t crc, uint8_t* data, uint8_t len)
-// {
-// int i;
-
-// while (len--)
-// {
-// uint8_t a = *data++;
-// crc ^= a;
-// for (i = 0; i < 8; ++i)
-// {
-// if (crc & 1)
-// crc = (crc >> 1) ^ 0xA001;
-// else
-// crc = (crc >> 1);
-// }
-// }
-
-// return crc;
-// }
-//
-//
 void kdnet_cb_onChannelBusy()
 {
 	kdnet_syncReceived = 1;
@@ -368,3 +348,25 @@ void kdnet_cb_onPacketReceived()
 		// myprintf("res=1\r\n");
 	}
 }
+
+// uint16_t kdnetCRC16Update (uint16_t crc, uint8_t* data, uint8_t len)
+// {
+// int i;
+
+// while (len--)
+// {
+// uint8_t a = *data++;
+// crc ^= a;
+// for (i = 0; i < 8; ++i)
+// {
+// if (crc & 1)
+// crc = (crc >> 1) ^ 0xA001;
+// else
+// crc = (crc >> 1);
+// }
+// }
+
+// return crc;
+// }
+//
+//

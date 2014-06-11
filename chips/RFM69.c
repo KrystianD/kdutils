@@ -88,8 +88,8 @@ void rfm69SwitchToStandby()
 }
 void rfm69SwitchToTx()
 {
-	rfm69WriteRegister(RFM69_OPMODE, RFM69_OPMODE_TRANSMITTER);
 	rfm69_setHighPower(1);
+	rfm69WriteRegister(RFM69_OPMODE, RFM69_OPMODE_TRANSMITTER);
 }
 void rfm69SwitchToRx()
 {
