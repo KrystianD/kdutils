@@ -375,13 +375,9 @@ uint8_t kdnet_cb_onPacketReceived()
 	}
 	else if (header->type == KDNET_TYPE_NOACK)
 	{
-		if (header->id > conn->inId) // new packet arrived
-		{
-			conn->inId = header->id;
-			conn->bcastSender = header->addrFrom;
-			kdnet_startListening();
-			conn->onRead(conn);
-		}
+		conn->bcastSender = header->addrFrom;
+		kdnet_startListening();
+		conn->onRead(conn);
 	}
 	else if (header->type == KDNET_TYPE_ACK)
 	{
