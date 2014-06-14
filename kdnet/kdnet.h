@@ -15,6 +15,10 @@
 #define KDNET_STATE_RECEIVING_ACK 6
 #define KDNET_STATE_RECEIVING_ACK_PRE 7
 
+#define KDNET_TYPE_NORMAL 0
+#define KDNET_TYPE_NOACK  1
+#define KDNET_TYPE_ACK    2
+
 #ifndef TKDNETHEADER
 #define TKDNETHEADER
 #pragma pack(1)
@@ -28,29 +32,39 @@ typedef struct
 #pragma pack()
 #endif
 
+typedef void (*funcread_t)();
+typedef void (*funcsent_t)();
+typedef void (*funcerror_t)(uint8_t type);
+#define CONN_IDLE     0
+#define CONN_TO_SEND  1
+#define CONN_WAIT_ACK 2
+#define CONN_SENT     3
+typedef struct
+{
+	uint8_t addrFrom, addrTo;
+	uint32_t id, inId;
+
+	uint8_t *buf, *inBuf;
+	uint16_t capacity;
+
+	uint8_t state;
+
+	uint32_t sendTime;
+	uint16_t dataLen, inDataLen;
+
+	funcread_t onRead;
+	funcsent_t onSent;
+	funcerror_t onError;
+
+} TKDNETConnection;
+
 extern uint32_t getTicks();
 extern int randMinMaxInt(int min, int max);
 
-extern uint32_t kdnetAddr;
-extern uint32_t kdnet_sendId, kdnet_recvId;
-
-extern uint8_t kdnet_state;
-extern TKDNETHeader kdnet_sendHeader;
-extern uint8_t kdnet_sendLen;
-extern uint8_t *kdnet_sendData;
-extern uint8_t kdnet_retries, kdnet_syncs;
-
+extern TKDNETConnection kdnetConnections[];
 extern TKDNETHeader kdnet_recvHeader;
 extern uint8_t kdnet_recvLen;
 extern uint8_t kdnet_recvData[64];
-extern uint8_t kdnet_recvAvail;
-
-extern uint8_t kdnet_syncReceived;
-extern uint32_t kdnet_syncReceivedTime;
-
-extern uint32_t kdnet_sendDelayTime;
-extern uint8_t kdnet_channelFree;
-extern uint8_t enableStatus;
 
 //stats
 extern uint32_t kdnet_syncNoPayload;
@@ -59,6 +73,7 @@ uint8_t kdnetInit();
 uint8_t kdnetProcess();
 
 uint8_t kdnetSendTo(uint8_t addrFrom, uint8_t addrTo, uint8_t* data, uint8_t len);
+uint8_t kdnetSend(TKDNETConnection* conn, uint8_t* data, uint16_t len);
 static inline TKDNETHeader* kdnetGetHeader()
 {
 	return &kdnet_recvHeader;

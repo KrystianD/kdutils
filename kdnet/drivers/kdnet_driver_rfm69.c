@@ -74,7 +74,7 @@ uint8_t kdnet_driver_process()
 	{
 		ER(kdnet_cb_onPacketSent());
 	}
-	
+
 	if (st2 & RFM69_IRQFLAGS2_PAYLOADREADY)
 	{
 		ER(kdnet_cb_onPacketReceived());
