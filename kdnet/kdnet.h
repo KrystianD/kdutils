@@ -32,16 +32,17 @@ typedef struct
 #pragma pack()
 #endif
 
-typedef void (*funcread_t)();
-typedef void (*funcsent_t)();
-typedef void (*funcerror_t)(uint8_t type);
+struct _TKDNETConnection;
+typedef void (*funcread_t)(struct _TKDNETConnection* conn);
+typedef void (*funcsent_t)(struct _TKDNETConnection* conn);
+typedef void (*funcerror_t)(struct _TKDNETConnection* conn, uint8_t type);
 #define CONN_IDLE     0
 #define CONN_TO_SEND  1
 #define CONN_WAIT_ACK 2
 #define CONN_SENT     3
-typedef struct
+struct _TKDNETConnection
 {
-	uint8_t addrFrom, addrTo;
+	uint8_t addrFrom, addrTo, bcastSender;
 	uint32_t id, inId;
 
 	uint8_t *buf, *inBuf;
@@ -56,7 +57,9 @@ typedef struct
 	funcsent_t onSent;
 	funcerror_t onError;
 
-} TKDNETConnection;
+	void* userdata;
+};
+typedef struct _TKDNETConnection TKDNETConnection;
 
 extern uint32_t getTicks();
 extern int randMinMaxInt(int min, int max);
@@ -74,7 +77,7 @@ uint8_t kdnetProcess();
 
 uint8_t kdnetSendTo(uint8_t addrFrom, uint8_t addrTo, uint8_t* data, uint8_t len);
 uint8_t kdnetSend(TKDNETConnection* conn, uint8_t* data, uint16_t len);
-static inline TKDNETHeader* kdnetGetHeader()
+/*static inline TKDNETHeader* kdnetGetHeader()
 {
 	return &kdnet_recvHeader;
 }
@@ -85,7 +88,7 @@ static inline uint8_t kdnetGetLen()
 static inline uint8_t* kdnetGetData()
 {
 	return kdnet_recvData;
-}
+}*/
 uint8_t kdnetIsSending();
 uint8_t kdnetWaitToSend();
 uint8_t kdnetIsChannelClear();

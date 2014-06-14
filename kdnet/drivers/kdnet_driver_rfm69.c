@@ -46,11 +46,8 @@ uint8_t kdnet_driver_process()
 	
 	ER(rfm69ReadRegister(RFM69_IRQFLAGS1, &st1));
 	ER(rfm69ReadRegister(RFM69_IRQFLAGS2, &st2));
-	
-	if (st1 & RFM69_IRQFLAGS1_SYNCADDRESSMATCH)
-	{
-		ER(kdnet_cb_onChannelBusy());
-	}
+
+	//rfm69PrintStatus();
 	
 	// if (st1 & RFM69_IRQFLAGS1_TIMEOUT)
 	// {
@@ -78,6 +75,13 @@ uint8_t kdnet_driver_process()
 	if (st2 & RFM69_IRQFLAGS2_PAYLOADREADY)
 	{
 		ER(kdnet_cb_onPacketReceived());
+	}
+	else
+	{
+		if (st1 & RFM69_IRQFLAGS1_SYNCADDRESSMATCH)
+		{
+			ER(kdnet_cb_onChannelBusy());
+		}
 	}
 
 	return KDNET_SUCCESS;

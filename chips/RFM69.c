@@ -5,6 +5,9 @@
 #ifndef RFM69_DEBUG
 #define RFM69_DEBUG(x,...)
 #endif
+#ifndef RFM69_DEBUGNNL
+#define RFM69_DEBUGNNL(x,...)
+#endif
 
 #define ER(x) if (x) return RFM69_ERROR;
 
@@ -153,30 +156,30 @@ void rfm69PrintStatus()
 		break;
 	}
 	
-	RFM69_DEBUG("     RSSI: %d\r\n", rfm69GetRSSI());
+	RFM69_DEBUGNNL("     RSSI: %d\r\n", rfm69GetRSSI());
 	
-	RFM69_DEBUG("irq1: 0x%02x: ", irq1);
+	RFM69_DEBUGNNL("irq1: 0x%02x: ", irq1);
 	
-	if (irq1 & RFM69_IRQFLAGS1_MODEREADY) RFM69_DEBUG("ModeReady, ");
-	if (irq1 & RFM69_IRQFLAGS1_RXREADY) RFM69_DEBUG("RxReady, ");
-	if (irq1 & RFM69_IRQFLAGS1_TXREADY) RFM69_DEBUG("TxReady, ");
-	if (irq1 & RFM69_IRQFLAGS1_PLLLOCK) RFM69_DEBUG("PllLock, ");
-	if (irq1 & RFM69_IRQFLAGS1_RSSI) RFM69_DEBUG("Rssi, ");
-	if (irq1 & RFM69_IRQFLAGS1_TIMEOUT) RFM69_DEBUG("Timeout, ");
-	if (irq1 & RFM69_IRQFLAGS1_AUTOMODE) RFM69_DEBUG("AutoMode, ");
-	if (irq1 & RFM69_IRQFLAGS1_SYNCADDRESSMATCH) RFM69_DEBUG("SyncAddrMatch, ");
+	if (irq1 & RFM69_IRQFLAGS1_MODEREADY) RFM69_DEBUGNNL("ModeReady, ");
+	if (irq1 & RFM69_IRQFLAGS1_RXREADY) RFM69_DEBUGNNL("RxReady, ");
+	if (irq1 & RFM69_IRQFLAGS1_TXREADY) RFM69_DEBUGNNL("TxReady, ");
+	if (irq1 & RFM69_IRQFLAGS1_PLLLOCK) RFM69_DEBUGNNL("PllLock, ");
+	if (irq1 & RFM69_IRQFLAGS1_RSSI) RFM69_DEBUGNNL("Rssi, ");
+	if (irq1 & RFM69_IRQFLAGS1_TIMEOUT) RFM69_DEBUGNNL("Timeout, ");
+	if (irq1 & RFM69_IRQFLAGS1_AUTOMODE) RFM69_DEBUGNNL("AutoMode, ");
+	if (irq1 & RFM69_IRQFLAGS1_SYNCADDRESSMATCH) RFM69_DEBUGNNL("SyncAddrMatch, ");
 	
-	RFM69_DEBUG("\r\nirq2: 0x%02x: ", irq2);
+	RFM69_DEBUGNNL("\r\nirq2: 0x%02x: ", irq2);
 	
-	if (irq2 & RFM69_IRQFLAGS2_FIFOFULL) RFM69_DEBUG("FifoFull, ");
-	if (irq2 & RFM69_IRQFLAGS2_FIFONOTEMPTY) RFM69_DEBUG("FifoNotEmpty, ");
-	if (irq2 & RFM69_IRQFLAGS2_FIFOLEVEL) RFM69_DEBUG("FifoLevel, ");
-	if (irq2 & RFM69_IRQFLAGS2_FIFOOVERRUN) RFM69_DEBUG("FifoOverrun, ");
-	if (irq2 & RFM69_IRQFLAGS2_PACKETSENT) RFM69_DEBUG("PacketSent, ");
-	if (irq2 & RFM69_IRQFLAGS2_PAYLOADREADY) RFM69_DEBUG("PayloadReady, ");
-	if (irq2 & RFM69_IRQFLAGS2_CRCOK) RFM69_DEBUG("CrcOk, ");
+	if (irq2 & RFM69_IRQFLAGS2_FIFOFULL) RFM69_DEBUGNNL("FifoFull, ");
+	if (irq2 & RFM69_IRQFLAGS2_FIFONOTEMPTY) RFM69_DEBUGNNL("FifoNotEmpty, ");
+	if (irq2 & RFM69_IRQFLAGS2_FIFOLEVEL) RFM69_DEBUGNNL("FifoLevel, ");
+	if (irq2 & RFM69_IRQFLAGS2_FIFOOVERRUN) RFM69_DEBUGNNL("FifoOverrun, ");
+	if (irq2 & RFM69_IRQFLAGS2_PACKETSENT) RFM69_DEBUGNNL("PacketSent, ");
+	if (irq2 & RFM69_IRQFLAGS2_PAYLOADREADY) RFM69_DEBUGNNL("PayloadReady, ");
+	if (irq2 & RFM69_IRQFLAGS2_CRCOK) RFM69_DEBUGNNL("CrcOk, ");
 	
-	RFM69_DEBUG("\r\n");
+	RFM69_DEBUGNNL("\r\n");
 }
 
 uint8_t rfm69WriteRegister(uint8_t addr, uint8_t value)
