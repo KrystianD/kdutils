@@ -100,8 +100,8 @@ uint8_t rfm69SwitchToTx()
 }
 uint8_t rfm69SwitchToRx()
 {
-	ER(rfm69WriteRegister(RFM69_OPMODE, RFM69_OPMODE_RECEIVER));
 	ER(rfm69_setHighPower(0));
+	ER(rfm69WriteRegister(RFM69_OPMODE, RFM69_OPMODE_RECEIVER));
 	return RFM69_SUCCESS;
 }
 uint8_t rfm69IsReady(uint8_t* ready)

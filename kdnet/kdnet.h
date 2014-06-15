@@ -35,6 +35,7 @@ typedef struct
 struct _TKDNETConnection;
 typedef void (*funcread_t)(struct _TKDNETConnection* conn);
 typedef void (*funcsent_t)(struct _TKDNETConnection* conn);
+typedef void (*funcreset_t)(struct _TKDNETConnection* conn);
 typedef void (*funcerror_t)(struct _TKDNETConnection* conn, uint8_t type);
 #define CONN_IDLE     0
 #define CONN_TO_SEND  1
@@ -57,6 +58,7 @@ struct _TKDNETConnection
 
 	funcread_t onRead;
 	funcsent_t onSent;
+	funcreset_t onReset;
 	funcerror_t onError;
 
 	void* userdata;
@@ -76,9 +78,10 @@ extern uint32_t kdnet_syncNoPayload;
 
 uint8_t kdnetInit();
 uint8_t kdnetProcess();
+uint8_t kdnetProcessInterrupt();
 
 uint8_t kdnetSendTo(uint8_t addrFrom, uint8_t addrTo, uint8_t* data, uint8_t len);
-uint8_t kdnetSend(TKDNETConnection* conn, uint8_t* data, uint16_t len);
+uint8_t kdnetSend(TKDNETConnection* conn, const uint8_t *data, uint16_t len);
 /*static inline TKDNETHeader* kdnetGetHeader()
 {
 	return &kdnet_recvHeader;

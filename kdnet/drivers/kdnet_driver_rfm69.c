@@ -26,6 +26,15 @@ uint8_t kdnet_driver_setRxMode()
 {
 	return rfm69SwitchToRx();
 }
+uint8_t kdnet_driver_waitForMode()
+{
+	uint8_t ready;
+	do
+	{
+		ER(rfm69IsReady(&ready));
+	} while (ready == 0);
+	return KDNET_SUCCESS;
+}
 uint8_t kdnet_driver_writePayload(const uint8_t* data, uint16_t len)
 {
 	return rfm69WritePayload(data, len);
@@ -38,17 +47,13 @@ uint8_t kdnet_driver_readPayload(uint8_t* data, uint16_t* len)
 	*len = len2;
 	return KDNET_SUCCESS;
 }
-uint8_t kdnet_driver_processInterrupt()
-{
-	return KDNET_SUCCESS;
-}
 uint8_t kdnet_driver_process()
 {
 	uint8_t st1, st2;
 	
 	ER(rfm69ReadRegister(RFM69_IRQFLAGS1, &st1));
 	ER(rfm69ReadRegister(RFM69_IRQFLAGS2, &st2));
-
+	
 	//rfm69PrintStatus();
 	
 	// if (st1 & RFM69_IRQFLAGS1_TIMEOUT)
@@ -73,7 +78,7 @@ uint8_t kdnet_driver_process()
 	{
 		ER(kdnet_cb_onPacketSent());
 	}
-
+	
 	if (st2 & RFM69_IRQFLAGS2_PAYLOADREADY)
 	{
 		ER(kdnet_cb_onPacketReceived());
@@ -84,6 +89,20 @@ uint8_t kdnet_driver_process()
 		{
 			ER(kdnet_cb_onChannelBusy());
 		}
+	}
+	
+	return KDNET_SUCCESS;
+}
+uint8_t kdnet_driver_processInterruptPacketSent()
+{
+	uint8_t st1, st2;
+
+	ER(rfm69ReadRegister(RFM69_IRQFLAGS1, &st1));
+	ER(rfm69ReadRegister(RFM69_IRQFLAGS2, &st2));
+
+	if (st2 & RFM69_IRQFLAGS2_PACKETSENT)
+	{
+		ER(kdnet_cb_onPacketSent());
 	}
 
 	return KDNET_SUCCESS;
