@@ -45,13 +45,15 @@ struct _TKDNETConnection
 	uint8_t addrFrom, addrTo, bcastSender;
 	uint32_t id, inId;
 
-	uint8_t *buf, *inBuf;
-	uint16_t capacity;
+	uint8_t *outBuf, *inBuf;
+	uint16_t outCapacity, inCapacity;
+
+	uint16_t outWrIdx, outRdIdx, outUsed;
 
 	uint8_t state;
 
 	uint32_t sendTime;
-	uint16_t dataLen, inDataLen;
+	uint16_t inDataLen;
 
 	funcread_t onRead;
 	funcsent_t onSent;
@@ -96,5 +98,10 @@ uint8_t kdnetIsAvail();
 uint8_t kdnetClear();
 
 uint16_t kdnetCRC16Update(uint16_t crc, uint8_t* data, uint8_t len);
+
+// connections
+void kdnetConnectionInit(TKDNETConnection* conn);
+void kdnetConnectionSetBuffers(TKDNETConnection* conn, uint8_t* outBuf, uint16_t outBufSize,
+		uint8_t* inBuf, uint16_t inBufSize);
 
 #endif

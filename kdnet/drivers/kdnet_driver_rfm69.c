@@ -32,9 +32,11 @@ uint8_t kdnet_driver_writePayload(const uint8_t* data, uint16_t len)
 }
 uint8_t kdnet_driver_readPayload(uint8_t* data, uint16_t* len)
 {
-	*len = kdnet_driver_getMaxPayloadLength();
-	
-	return rfm69ReadPayload(data, *len);
+	// *len = kdnet_driver_getMaxPayloadLength();
+	uint8_t len2;
+	ER(rfm69ReadPayloadVarLen(data, &len2));
+	*len = len2;
+	return KDNET_SUCCESS;
 }
 uint8_t kdnet_driver_processInterrupt()
 {

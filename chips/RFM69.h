@@ -31,6 +31,7 @@ void rfm69PrintStatus();
 uint8_t rfm69IsReady(uint8_t* ready);
 
 uint8_t rfm69ReadPayload(uint8_t* data, uint8_t len);
+uint8_t rfm69ReadPayloadVarLen(uint8_t* data, uint8_t* len);
 uint8_t rfm69WritePayload(const uint8_t* data, uint8_t len);
 
 uint8_t rfm69WriteRegister(uint8_t addr, uint8_t value);
