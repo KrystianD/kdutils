@@ -49,45 +49,45 @@ uint8_t kdnet_driver_readPayload(uint8_t* data, uint16_t* len)
 }
 uint8_t kdnet_driver_process()
 {
-	uint8_t st1, st2;
-	
+	uint8_t op, st1, st2;
+
+	ER(rfm69ReadRegister(RFM69_OPMODE, &op));
 	ER(rfm69ReadRegister(RFM69_IRQFLAGS1, &st1));
 	ER(rfm69ReadRegister(RFM69_IRQFLAGS2, &st2));
-	
-	//rfm69PrintStatus();
-	
-	// if (st1 & RFM69_IRQFLAGS1_TIMEOUT)
-	// {
-	// if (!(st1 & RFM69_IRQFLAGS1_SYNCADDRESSMATCH))
-	// {
-	// KDNET_DEBUG ("restart");
-	// kdnet_driver_setIdleModkdnet_driver_setTxModee ();
-	// kdnet_startListening ();
-	// }
-	// }
-	
-	// if (enableStatus)
-	// {
-	// rfm69PrintStatus ();
-	// if (!kdnet_channelFree)
-	// myprintf ("NOT FREE\r\n");
-	// _delay_ms (200);
-	// }
-	
-	if (st2 & RFM69_IRQFLAGS2_PACKETSENT)
+
+	if (op & RFM69_OPMODE_TRANSMITTER)
 	{
-		ER(kdnet_cb_onPacketSent());
-	}
-	
-	if (st2 & RFM69_IRQFLAGS2_PAYLOADREADY)
-	{
-		ER(kdnet_cb_onPacketReceived());
-	}
-	else
-	{
-		if (st1 & RFM69_IRQFLAGS1_SYNCADDRESSMATCH)
+		if (st2 & RFM69_IRQFLAGS2_PACKETSENT)
 		{
-			ER(kdnet_cb_onChannelBusy());
+			ER(kdnet_cb_onPacketSent());
+		}
+	}
+	else if (op & RFM69_OPMODE_RECEIVER)
+	{
+		if (st2 & RFM69_IRQFLAGS2_PAYLOADREADY)
+		{
+			if (st2 & RFM69_IRQFLAGS2_CRCOK)
+			{
+				ER(kdnet_cb_onPacketReceived());
+			}
+			else
+			{
+				kdnet_driver_setIdleMode();
+				kdnet_driver_setRxMode();
+				KDNET_DEBUG("CRC ERROR!");
+			}
+			ER(kdnet_cb_onChannelFree());
+		}
+		else
+		{
+			if (st1 & RFM69_IRQFLAGS1_SYNCADDRESSMATCH)
+			{
+				ER(kdnet_cb_onChannelBusy());
+			}
+			else
+			{
+				ER(kdnet_cb_onChannelFree());
+			}
 		}
 	}
 	
