@@ -81,9 +81,9 @@ uint8_t kdnetInit()
 	kdnet_state = KDNET_STATE_NONE;
 	kdnet_currConn = 0;
 	kdnet_sendDelayTime = 0;
-
+	
 	ER(kdnet_startListening());
-
+	
 	return KDNET_SUCCESS;
 }
 
@@ -118,7 +118,7 @@ uint8_t kdnetProcess()
 	switch (kdnet_state)
 	{
 	case KDNET_STATE_NONE:
-
+	
 		break;
 	case KDNET_STATE_SENDING:
 		if (0 && getTicks() - kdnet_sendTime > KDNET_TYPICAL_SEND_TIME * 2)
@@ -137,7 +137,7 @@ uint8_t kdnetProcess()
 			ER(kdnet_driver_setIdleMode());
 			ER(kdnet_startListening());
 		}
-
+		
 		for (i = 0; i < kdnet_connSize; i++)
 		{
 			TKDNETConnection *c = kdnet_connetions[i];
@@ -187,7 +187,7 @@ uint8_t kdnetProcess()
 		}
 		break;
 	}
-
+	
 	for (i = 0; i < kdnet_connSize; i++)
 	{
 		TKDNETConnection *c = kdnet_connetions[i];
@@ -200,7 +200,7 @@ uint8_t kdnetProcess()
 			c->tmpSentPerSec = 0;
 		}
 	}
-
+	
 	ER(kdnet_driver_process());
 	return KDNET_SUCCESS;
 }
@@ -215,17 +215,17 @@ uint8_t kdnet_readPacket()
 	uint8_t data[KDNET_MAX_PACKET_LEN];
 	uint16_t payloadLen;
 	ER(kdnet_driver_readPayload(data, &payloadLen));
-
+	
 	TKDNETHeader *header = (TKDNETHeader*)data;
 	TKDNETConnection* conn = kdnet_connByHeaderRev(header);
 	if (!conn)
 		return KDNET_SUCCESS;
-
+		
 	conn->inDataLen = payloadLen - sizeof(TKDNETHeader) - 2;
 	memcpy(conn->inBuf, data + sizeof(TKDNETHeader), conn->inDataLen);
-
+	
 	kdnet_lastRead = getTicks();
-
+	
 	return KDNET_SUCCESS;
 }
 uint8_t kdnet_writeConnPacket(TKDNETConnection* conn)
@@ -234,38 +234,38 @@ uint8_t kdnet_writeConnPacket(TKDNETConnection* conn)
 	header.addrFrom = conn->addrFrom;
 	header.addrTo = conn->addrTo;
 	header.id = conn->id;
-
+	
 	if (header.addrTo == 0xff)
 		header.type = KDNET_TYPE_NOACK;
 	else
 		header.type = KDNET_TYPE_NORMAL;
-
+		
 	uint16_t len;
 	kdnet_connPeek(conn, (uint8_t*)&len, sizeof(len));
-
+	
 	uint8_t queueData[len + sizeof(len)];
 	kdnet_connPeek(conn, queueData, sizeof(queueData));
-
+	
 	if (conn->addrTo == 0xff)
 		kdnet_connRelease(conn, sizeof(queueData));
-
+		
 	uint8_t data[1 + len + sizeof(header)];
 	data[0] = sizeof(header) + len;
 	memcpy(data + 1, (uint8_t*)&header, sizeof(header));
 	memcpy(data + 1 + sizeof(header), queueData + sizeof(len), len);
-
+	
 	ER(kdnet_driver_setIdleMode());
 	ER(kdnet_driver_writePayload(data, sizeof(data)));
 	ER(kdnet_driver_setTxMode());
-
+	
 	conn->sendTime = getTicks();
-
+	
 	KDNET_DEBUG("Set module to send packet from 0x%02x to 0x%02x id %d of length: %d",
-			header.addrFrom, header.addrTo, header.id, len);
+	            header.addrFrom, header.addrTo, header.id, len);
 	kdnet_setChannelBusy();
 	kdnet_state = KDNET_STATE_SENDING;
 	kdnet_currConn = conn;
-
+	
 	if (header.addrTo == 0xff)
 	{
 		conn->state = CONN_IDLE;
@@ -275,7 +275,7 @@ uint8_t kdnet_writeConnPacket(TKDNETConnection* conn)
 	{
 		conn->state = CONN_WAIT_TO_RCV_ACK;
 	}
-
+	
 	KDNET_MUTEX_UNLOCK();
 	return KDNET_SUCCESS;
 }
@@ -286,38 +286,38 @@ uint8_t kdnet_writeACK(TKDNETConnection* conn, uint32_t idToAck)
 	header.addrTo = conn->addrTo;
 	header.id = idToAck;
 	header.type = KDNET_TYPE_ACK;
-
+	
 	uint8_t data[1 + sizeof(header)];
 	data[0] = sizeof(header);
 	memcpy(data + 1, (uint8_t*)&header, sizeof(header));
-
+	
 	ER(kdnet_driver_setIdleMode());
 	//ER(kdnet_driver_waitForMode());
 	ER(kdnet_driver_writePayload(data, sizeof(data)));
 	ER(kdnet_driver_setTxMode());
 	//ER(kdnet_driver_waitForMode());
-
+	
 	kdnet_sendTime = getTicks();
-
+	
 	KDNET_DEBUG("Set module to send ACK from 0x%02x to 0x%02x id %d of length: %d",
-			header.addrFrom, header.addrTo, header.id, sizeof(data));
+	            header.addrFrom, header.addrTo, header.id, sizeof(data));
 	kdnet_state = KDNET_STATE_SENDING_ACK;
 	conn->state = CONN_IDLE;
 	kdnet_currConn = conn;
-
+	
 	return KDNET_SUCCESS;
 }
 uint8_t kdnet_startListening()
 {
 	ER(kdnet_driver_setRxMode());
 	//ER(kdnet_driver_waitForMode());
-
+	
 	kdnet_setChannelFree();
 	kdnet_syncReceived = 0;
 	kdnet_state = KDNET_STATE_RECEIVING;
 	kdnet_currConn = 0;
 	KDNET_DEBUG("RX mode");
-
+	
 	return KDNET_SUCCESS;
 }
 
@@ -327,24 +327,24 @@ uint8_t kdnetSend(TKDNETConnection* conn, const uint8_t* data, uint16_t len)
 	if (!kdnet_connHasSpace(conn, sizeof(len) + len))
 	{
 		KDNET_DEBUG("No space in output buffer (%d used of %d, adding %d)",
-				conn->outUsed, conn->outCapacity, len + sizeof(len));
+		            conn->outUsed, conn->outCapacity, len + sizeof(len));
 		KDNET_MUTEX_UNLOCK();
 		return KDNET_ERROR;
 	}
 	kdnet_connAppend(conn, (uint8_t*)&len, sizeof(len));
 	kdnet_connAppend(conn, data, len);
 	KDNET_MUTEX_UNLOCK();
-
+	
 	return KDNET_SUCCESS;
 }
 
 uint8_t kdnetIsSending()
 {
 	return
-		kdnet_state != KDNET_STATE_NONE
-		&& kdnet_state != KDNET_STATE_RECEIVING
-		&& kdnet_state != KDNET_STATE_RECEIVING_PRE
-		;
+	  kdnet_state != KDNET_STATE_NONE
+	  && kdnet_state != KDNET_STATE_RECEIVING
+	  && kdnet_state != KDNET_STATE_RECEIVING_PRE
+	  ;
 }
 uint8_t kdnetWaitToSend()
 {
@@ -381,9 +381,12 @@ uint8_t kdnet_cb_onPacketSent()
 	{
 	case KDNET_STATE_SENDING:
 		KDNET_DEBUG("Sent successfuly");
-		if (kdnet_currConn->onSent)
-			kdnet_currConn->onSent(kdnet_currConn);
-		kdnet_currConn->state = CONN_IDLE;
+		if (kdnet_currConn->state != CONN_WAIT_TO_RCV_ACK)
+		{
+			if (kdnet_currConn->onSent)
+				kdnet_currConn->onSent(kdnet_currConn);
+			kdnet_currConn->state = CONN_IDLE;
+		}
 		kdnet_currConn->tmpSentPerSec++;
 		ER(kdnet_startListening());
 		kdnet_packetSendTime = getTicks();
@@ -394,44 +397,44 @@ uint8_t kdnet_cb_onPacketSent()
 		ER(kdnet_startListening());
 		break;
 	}
-
+	
 	return KDNET_SUCCESS;
 }
 uint8_t kdnet_cb_onPacketReceived()
 {
 	uint8_t data[KDNET_MAX_PACKET_LEN];
 	uint16_t payloadLen = 0xdeed;
-
+	
 	ER(kdnet_driver_readPayload(data, &payloadLen));
-
+	
 	TKDNETHeader *header = (TKDNETHeader*)data;
-
+	
 	KDNET_DEBUG("Valid packet received from: 0x%02x to: 0x%02x id: %d type: %d len: %d",
-			header->addrFrom,
-			header->addrTo,
-			header->id,
-			header->type,
-			payloadLen);
-
+	            header->addrFrom,
+	            header->addrTo,
+	            header->id,
+	            header->type,
+	            payloadLen);
+	            
 	if (payloadLen < sizeof(TKDNETHeader))
 	{
 		ER(kdnet_driver_setIdleMode());
 		kdnet_startListening();
 		return KDNET_SUCCESS;
 	}
-
+	
 	TKDNETConnection* conn = kdnet_connByHeaderRev(header);
 	if (!conn)
 	{
 		kdnet_startListening();
 		return KDNET_SUCCESS;
 	}
-
+	
 	conn->inDataLen = payloadLen - sizeof(TKDNETHeader);
 	memcpy(conn->inBuf, data + sizeof(TKDNETHeader), conn->inDataLen);
-
+	
 	kdnet_lastRead = getTicks();
-
+	
 	if (header->type == KDNET_TYPE_NORMAL)
 	{
 		if (header->id > conn->inId || header->id == 0) // new packet arrived
@@ -471,7 +474,7 @@ uint8_t kdnet_cb_onPacketReceived()
 			conn->state = CONN_IDLE;
 			conn->id++;
 			kdnet_startListening();
-
+			
 			KDNET_MUTEX_LOCK();
 			uint16_t len;
 			kdnet_connPeek(conn, (uint8_t*)&len, sizeof(len));
@@ -483,7 +486,7 @@ uint8_t kdnet_cb_onPacketReceived()
 	{
 		kdnet_startListening();
 	}
-
+	
 	return KDNET_SUCCESS;
 }
 
@@ -493,7 +496,7 @@ void kdnetConnectionInit(TKDNETConnection* conn)
 	conn->state = CONN_IDLE;
 }
 void kdnetConnectionSetBuffers(TKDNETConnection* conn, uint8_t* outBuf, uint16_t outBufSize,
-		uint8_t* inBuf, uint16_t inBufSize)
+                               uint8_t* inBuf, uint16_t inBufSize)
 {
 	conn->outBuf = outBuf;
 	conn->outCapacity = outBufSize;
