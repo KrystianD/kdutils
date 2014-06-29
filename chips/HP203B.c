@@ -9,30 +9,38 @@ uint32_t hp203b_convEndTime = 0;
 
 uint8_t hp203bInit()
 {
+	if (hp203bI2CSendCommand(HP203B_WRITE_REG | 0x0f, (uint8_t*)"\x80", 1))
+		return HP203B_ERROR;
 
 	return HP203B_SUCCESS;
 }
-uint8_t hp203BStartConversion(uint8_t OSR)
+uint8_t hp203bCalibrate()
+{
+	if (hp203bI2CSendCommand(HP203B_ANA_CAL, 0, 0))
+		return HP203B_ERROR;
+	return HP203B_ERROR;
+}
+uint8_t hp203bStartConversion(uint8_t OSR)
 {
 	switch (OSR)
 	{
 	case HP203B_OSR_128:
-		hp203b_convEndTime = getTicks() + 5;
+		hp203b_convEndTime = getTicks() + 5 + 5;
 		break;
 	case HP203B_OSR_256:
-		hp203b_convEndTime = getTicks() + 9;
+		hp203b_convEndTime = getTicks() + 9 + 5;
 		break;
 	case HP203B_OSR_512:
-		hp203b_convEndTime = getTicks() + 17;
+		hp203b_convEndTime = getTicks() + 17 + 5;
 		break;
 	case HP203B_OSR_1024:
-		hp203b_convEndTime = getTicks() + 33;
+		hp203b_convEndTime = getTicks() + 33 + 5;
 		break;
 	case HP203B_OSR_2048:
-		hp203b_convEndTime = getTicks() + 66;
+		hp203b_convEndTime = getTicks() + 66 + 5;
 		break;
 	case HP203B_OSR_4096:
-		hp203b_convEndTime = getTicks() + 170;
+		hp203b_convEndTime = getTicks() + 132 + 5;
 		break;
 	default:
 		return HP203B_ERROR;
@@ -43,6 +51,10 @@ uint8_t hp203BStartConversion(uint8_t OSR)
 	hp203b_state = HP203B_STATE_WAIT_FOR_CONV;
 		
 	return HP203B_SUCCESS;
+}
+uint8_t hp203bIsBusy()
+{
+	return hp203b_state == HP203B_STATE_WAIT_FOR_CONV;
 }
 uint8_t hp203bIsResultReady()
 {
@@ -78,9 +90,5 @@ uint8_t hp203bReadAltitude(uint32_t* altitude)
 	
 	*altitude = (d[0] << 16) | (d[1] << 8) | d[2];
 
-	return HP203B_SUCCESS;
-}
-uint8_t hp203bProcess()
-{
 	return HP203B_SUCCESS;
 }

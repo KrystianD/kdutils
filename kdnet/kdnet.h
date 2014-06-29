@@ -33,8 +33,8 @@ typedef struct
 #endif
 
 struct _TKDNETConnection;
-typedef void (*funcread_t)(struct _TKDNETConnection* conn);
-typedef void (*funcsent_t)(struct _TKDNETConnection* conn);
+typedef void (*funcread_t)(struct _TKDNETConnection* conn, TKDNETHeader* header);
+typedef void (*funcsent_t)(struct _TKDNETConnection* conn, TKDNETHeader* header);
 typedef void (*funcreset_t)(struct _TKDNETConnection* conn);
 typedef void (*funcerror_t)(struct _TKDNETConnection* conn, uint8_t type);
 #define CONN_IDLE            0
@@ -44,7 +44,7 @@ typedef void (*funcerror_t)(struct _TKDNETConnection* conn, uint8_t type);
 #define CONN_SENT            4
 struct _TKDNETConnection
 {
-	uint8_t addrFrom, addrTo, bcastSender;
+	uint8_t addrFrom, addrTo;
 	uint32_t id, inId;
 
 	uint8_t *outBuf, *inBuf;
@@ -80,8 +80,6 @@ extern int randMinMaxInt(int min, int max);
 
 extern TKDNETConnection kdnetConnections[];
 extern TKDNETHeader kdnet_recvHeader;
-extern uint8_t kdnet_recvLen;
-extern uint8_t kdnet_recvData[64];
 
 //stats
 extern uint32_t kdnet_syncNoPayload;
