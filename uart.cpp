@@ -25,13 +25,16 @@ SerialHandle uart_open(const char* path, int speed)
 	options.c_iflag &= ~(INPCK | IXON | IXOFF | IXANY | ICRNL);
 	options.c_oflag &= ~(OPOST | ONLCR);
 	
+	cfmakeraw(&options);
+
 	for (uint i = 0; i < sizeof(options.c_cc); i++)
 		options.c_cc[i] = _POSIX_VDISABLE;
 		
 	options.c_cc[VTIME] = 0;
 	options.c_cc[VMIN] = 1;
-	
-	tcsetattr(fd, TCSAFLUSH, &options);
+
+	tcflush(fd, TCIFLUSH);
+	tcsetattr(fd, TCSANOW, &options);
 	
 	return fd;
 }
