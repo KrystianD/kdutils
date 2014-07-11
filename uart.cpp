@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <QDebug>
 
 SerialHandle uart_open(const char* path, int speed)
 {
