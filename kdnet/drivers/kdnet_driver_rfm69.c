@@ -82,12 +82,17 @@ uint8_t kdnet_driver_process()
 		{
 			if (st1 & RFM69_IRQFLAGS1_SYNCADDRESSMATCH)
 			{
+				kdnet_cb_setConnectionRssi(rfm69GetRSSI());
 				ER(kdnet_cb_onChannelBusy());
 			}
 			else
 			{
 				ER(kdnet_cb_onChannelFree());
 			}
+		}
+
+		if (st1 & RFM69_IRQFLAGS1_RSSI)
+		{
 		}
 	}
 	

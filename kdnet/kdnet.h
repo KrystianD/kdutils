@@ -46,6 +46,7 @@ struct _TKDNETConnection
 {
 	uint8_t addrFrom, addrTo;
 	uint32_t id, inId;
+	int8_t rssi;
 
 	uint8_t *outBuf, *inBuf;
 	uint16_t outCapacity, inCapacity;

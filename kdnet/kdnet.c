@@ -18,6 +18,7 @@ uint8_t enableStatus = 0;
 //sync
 uint8_t kdnet_syncReceived = 0;
 uint32_t kdnet_syncReceivedTime;
+int8_t kdnet_rssi = 0;
 
 uint8_t kdnet_state;
 TKDNETConnection *kdnet_currConn = 0;
@@ -233,7 +234,7 @@ uint8_t kdnet_writeConnPacket(TKDNETConnection* conn)
 	kdnet_currHeader.id = conn->id;
 	
 	uint8_t isBroadcast = kdnet_currHeader.addrTo == 0xff;
-
+	
 	if (isBroadcast)
 		kdnet_currHeader.type = KDNET_TYPE_NOACK;
 	else
@@ -256,12 +257,12 @@ uint8_t kdnet_writeConnPacket(TKDNETConnection* conn)
 	ER(kdnet_driver_setIdleMode());
 	ER(kdnet_driver_writePayload(data, sizeof(data)));
 	ER(kdnet_driver_setTxMode());
-
+	
 	kdnet_sendTime = getTicks();
 	conn->sendTime = getTicks();
 	
 	KDNET_DEBUG("Set module to send packet from 0x%02x to 0x%02x id %d of length: %d",
-							kdnet_currHeader.addrFrom, kdnet_currHeader.addrTo, kdnet_currHeader.id, len);
+	            kdnet_currHeader.addrFrom, kdnet_currHeader.addrTo, kdnet_currHeader.id, len);
 	kdnet_setChannelBusy();
 	kdnet_state = KDNET_STATE_SENDING;
 	kdnet_currConn = conn;
@@ -297,7 +298,7 @@ uint8_t kdnet_writeACK(TKDNETConnection* conn, uint32_t idToAck)
 	kdnet_sendTime = getTicks();
 	
 	KDNET_DEBUG("Set module to send ACK from 0x%02x to 0x%02x id %d of length: %d",
-							kdnet_currHeader.addrFrom, kdnet_currHeader.addrTo, kdnet_currHeader.id, sizeof(data));
+	            kdnet_currHeader.addrFrom, kdnet_currHeader.addrTo, kdnet_currHeader.id, sizeof(data));
 	kdnet_state = KDNET_STATE_SENDING_ACK;
 	conn->state = CONN_IDLE;
 	kdnet_currConn = conn;
@@ -417,6 +418,7 @@ uint8_t kdnet_cb_onPacketReceived()
 		return KDNET_SUCCESS;
 	}
 	
+	conn->rssi = kdnet_rssi;
 	conn->inDataLen = payloadLen - sizeof(TKDNETHeader);
 	memcpy(conn->inBuf, data + sizeof(TKDNETHeader), conn->inDataLen);
 	
@@ -475,6 +477,10 @@ uint8_t kdnet_cb_onPacketReceived()
 	}
 	
 	return KDNET_SUCCESS;
+}
+void kdnet_cb_setConnectionRssi(int8_t rssi)
+{
+	kdnet_rssi = rssi;
 }
 
 void kdnetConnectionInit(TKDNETConnection* conn)

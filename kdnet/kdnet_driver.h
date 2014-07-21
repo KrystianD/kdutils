@@ -20,5 +20,6 @@ extern uint8_t kdnet_cb_onChannelBusy();
 extern uint8_t kdnet_cb_onChannelFree();
 extern uint8_t kdnet_cb_onPacketSent();
 extern uint8_t kdnet_cb_onPacketReceived();
+extern void kdnet_cb_setConnectionRssi(int8_t rssi);
 
 #endif
