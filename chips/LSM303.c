@@ -125,8 +125,26 @@ uint8_t lsm303SetMagnetPowerDownMode()
 	return lsm303_writeBits(LSM303_CTRL7, LSM303_CTRL7_MD_BIT, LSM303_CTRL7_MD_LEN, LSM303_MAGNET_POWERDOWN);
 }
 
+uint8_t lsm303SetAccelDataRate(uint8_t rate)
+{
+	return lsm303_writeBits(LSM303_CTRL1, LSM303_CTRL1_AODR_BIT, LSM303_CTRL1_AODR_LEN, rate);
+}
+uint8_t lsm303SetAccelBandwidth(uint8_t bandwidth)
+{
+	return lsm303_writeBits(LSM303_CTRL2, LSM303_CTRL2_ABW_BIT, LSM303_CTRL2_ABW_LEN, bandwidth);
+}
+uint8_t lsm303SetAccelScale(uint8_t scale)
+{
+	return lsm303_writeBits(LSM303_CTRL2, LSM303_CTRL2_AFS_BIT, LSM303_CTRL2_AFS_LEN, scale);
+}
+
 uint8_t lsm303ReadMagnet(LSM303_MAGNET_DATA* data)
 {
 	// in order to read multiple bytes, it is necessary to set most significant bit of the register address
 	return lsm303I2CReadCommand(LSM303_OUT_X_L_M | 0x80, (uint8_t*)data, 6);
+}
+uint8_t lsm303ReadAccel(LSM303_ACCEL_DATA* data)
+{
+	// in order to read multiple bytes, it is necessary to set most significant bit of the register address
+	return lsm303I2CReadCommand(LSM303_OUT_X_L_A | 0x80, (uint8_t*)data, 6);
 }

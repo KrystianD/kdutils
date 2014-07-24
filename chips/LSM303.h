@@ -81,7 +81,39 @@
 //bits
 #define LSM303_CTRL0_BOOT   0x80
 
+#define LSM303_CTRL1_AXEN   0x01
+#define LSM303_CTRL1_AYEN   0x02
+#define LSM303_CTRL1_AZEN   0x04
 #define LSM303_CTRL1_BDU    0x08
+
+#define LSM303_ACCEL_RATE_POWERDOWN 0x00
+#define LSM303_ACCEL_RATE_3_125HZ   0x01
+#define LSM303_ACCEL_RATE_6_25HZ    0x02
+#define LSM303_ACCEL_RATE_12_5HZ    0x03
+#define LSM303_ACCEL_RATE_25HZ      0x04
+#define LSM303_ACCEL_RATE_50HZ      0x05
+#define LSM303_ACCEL_RATE_100HZ     0x06
+#define LSM303_ACCEL_RATE_200HZ     0x07
+#define LSM303_ACCEL_RATE_400HZ     0x08
+#define LSM303_ACCEL_RATE_800HZ     0x09
+#define LSM303_ACCEL_RATE_1600HZ    0x0a
+#define LSM303_CTRL1_AODR_BIT 4
+#define LSM303_CTRL1_AODR_LEN 4
+
+#define LSM303_ACCEL_FILTER_773HZ 0b00
+#define LSM303_ACCEL_FILTER_194HZ 0b01
+#define LSM303_ACCEL_FILTER_362HZ 0b10
+#define LSM303_ACCEL_FILTER_50HZ  0b11
+#define LSM303_CTRL2_ABW_BIT 6
+#define LSM303_CTRL2_ABW_LEN 2
+
+#define LSM303_ACCEL_SCALE_2  0x00
+#define LSM303_ACCEL_SCALE_4  0x01
+#define LSM303_ACCEL_SCALE_6  0x02
+#define LSM303_ACCEL_SCALE_8  0x03
+#define LSM303_ACCEL_SCALE_16 0x04
+#define LSM303_CTRL2_AFS_BIT 3
+#define LSM303_CTRL2_AFS_LEN 3
 
 #define LSM303_RESOLUTION_0    0x00
 #define LSM303_RESOLUTION_1    0x01
@@ -118,6 +150,10 @@ typedef struct
 {
 	int16_t mx, my, mz;
 } LSM303_MAGNET_DATA;
+typedef struct
+{
+	int16_t ax, ay, az;
+} LSM303_ACCEL_DATA;
 #pragma pack()
 
 uint8_t lsm303Presence();
@@ -134,6 +170,11 @@ uint8_t lsm303SetMagnetContinuousMode();
 uint8_t lsm303SetMagnetSingleMode();
 uint8_t lsm303SetMagnetPowerDownMode();
 
+uint8_t lsm303SetAccelDataRate(uint8_t rate);
+uint8_t lsm303SetAccelBandwidth(uint8_t bandwidth);
+uint8_t lsm303SetAccelScale(uint8_t scale);
+
 uint8_t lsm303ReadMagnet(LSM303_MAGNET_DATA* data);
+uint8_t lsm303ReadAccel(LSM303_ACCEL_DATA* data);
 
 #endif
