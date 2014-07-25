@@ -123,7 +123,7 @@ uint8_t kdnetProcess()
 		if (0 && getTicks() - kdnet_sendTime > KDNET_TYPICAL_SEND_TIME * 2)
 		{
 			KDNET_DEBUG("Sending timeouted");
-			for (;;);
+			// for (;;);
 			// ER(kdnet_driver_setIdleMode());
 			// //kdnet_retries++;
 			// ER(kdnet_writePacket());
@@ -136,11 +136,22 @@ uint8_t kdnetProcess()
 			ER(kdnet_driver_setIdleMode());
 			ER(kdnet_startListening());
 		}
+
+		uint8_t hasConnWaitForAck = 0;
+		for (i = 0; i < kdnet_connSize; i++)
+		{
+			TKDNETConnection *c = kdnet_connetions[i];
+			if (c->state == CONN_WAIT_TO_RCV_ACK)
+			{
+				hasConnWaitForAck = 1;
+				break;
+			}
+		}
 		
 		for (i = 0; i < kdnet_connSize; i++)
 		{
 			TKDNETConnection *c = kdnet_connetions[i];
-			if (c->state == CONN_IDLE)
+			if (c->state == CONN_IDLE && !hasConnWaitForAck)
 			{
 				KDNET_MUTEX_LOCK();
 				if (c->outUsed > 0)
@@ -164,10 +175,10 @@ uint8_t kdnetProcess()
 				{
 					if (kdnetIsChannelClear())
 					{
+						KDNET_DEBUG("Retransmission");
 						KDNET_MUTEX_LOCK();
 						kdnet_writeConnPacket(c);
 						KDNET_MUTEX_UNLOCK();
-						KDNET_DEBUG("Retransmission");
 						break;
 					}
 					else
@@ -299,6 +310,7 @@ uint8_t kdnet_writeACK(TKDNETConnection* conn, uint32_t idToAck)
 	
 	KDNET_DEBUG("Set module to send ACK from 0x%02x to 0x%02x id %d of length: %d",
 	            kdnet_currHeader.addrFrom, kdnet_currHeader.addrTo, kdnet_currHeader.id, sizeof(data));
+	kdnet_setChannelBusy();
 	kdnet_state = KDNET_STATE_SENDING_ACK;
 	conn->state = CONN_IDLE;
 	kdnet_currConn = conn;
