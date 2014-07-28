@@ -1,10 +1,12 @@
 #include "MPU6050.h"
 
-#include <i2c.h>
-#include <myprintf.h>
-#include <delay.h>
+#include <string.h>
 
 #define SWAP16(x) (((x & 0x00ff) << 8) | ((x & 0xff00) >> 8))
+
+#ifndef MPU6050_DEBUG
+#define MPU6050_DEBUG(x,...)
+#endif
 
 uint8_t mpu6050WriteBit(uint8_t reg, uint8_t bit, uint8_t enabled)
 {
@@ -269,21 +271,21 @@ void mpu6050Info()
 	if (mpu6050I2CReadCommand(MPU6050_CONFIG, &reg, 1))
 		return;
 		
-	myprintf("CONFIG: 0x%02x\r\n", reg);
+	MPU6050_DEBUG("CONFIG: 0x%02x\r\n", reg);
 	
 	if (mpu6050I2CReadCommand(MPU6050_ACCEL_CONFIG, &reg, 1))
 		return;
 		
-	myprintf("ACCEL_CONFIG: 0x%02x\r\n", reg);
+	MPU6050_DEBUG("ACCEL_CONFIG: 0x%02x\r\n", reg);
 	
 	if (mpu6050I2CReadCommand(MPU6050_PWR1, &reg, 1))
 		return;
 		
-	myprintf("PWM_MGMT_1: 0x%02x\r\n", reg);
+	MPU6050_DEBUG("PWM_MGMT_1: 0x%02x\r\n", reg);
 }
 
 void mpu6050PrintData(MPU6050_Data* data)
 {
-	myprintf("aX: %6d aY: %6d aZ: %6d gX: %6d gY: %6d gZ: %6d temp: %6d\r\n",
+	MPU6050_DEBUG("aX: %6d aY: %6d aZ: %6d gX: %6d gY: %6d gZ: %6d temp: %6d\r\n",
 	         data->ax, data->ay, data->az, data->gx, data->gy, data->gz, mpu6050GetTemp(data));
 }
