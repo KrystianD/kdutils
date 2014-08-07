@@ -159,35 +159,6 @@ char nmeaParseGetChar()
 	nmea_idx++;
 	return c;
 }
-int16_t nmeaParseGetInt16()
-{
-	int16_t val = 0;
-	uint8_t neg = 0;
-	for (;;)
-	{
-		char c = nmea_args[nmea_idx];
-		nmea_idx++;
-		if (c == '-')
-		{
-			neg = 1;
-		}
-		else if (c == ',')
-		{
-			break;
-		}
-		else if (c == '.')
-		{
-			nmeaParseSkip();
-			break;
-		}
-		else if (c >= '0' && c <= '9')
-		{
-			val *= 10;
-			val += c - '0';
-		}
-	}
-	return neg ? -val : val;
-}
 int32_t nmeaParseGetInt32()
 {
 	int32_t val = 0;
@@ -300,7 +271,7 @@ void nmeaParseGPGSA()
 {
 	NMEA_DEBUG("GPGSA");
 	char mode = nmeaParseGetChar();
-	int16_t type = nmeaParseGetInt16();
+	int16_t type = nmeaParseGetInt32();
 	
 	int i;
 	int16_t vals[12];
@@ -313,7 +284,7 @@ void nmeaParseGPGSA()
 		}
 		else
 		{
-			vals[i] = nmeaParseGetInt16();
+			vals[i] = nmeaParseGetInt32();
 		}
 	}
 	
@@ -328,8 +299,8 @@ void nmeaParseGPGGA()
 	char latSign = nmeaParseGetChar();
 	float lonVal = nmeaParseGetFloat();
 	char lonSign = nmeaParseGetChar();
-	uint8_t fix = nmeaParseGetInt16();
-	uint8_t sats = nmeaParseGetInt16();
+	uint8_t fix = nmeaParseGetInt32();
+	uint8_t sats = nmeaParseGetInt32();
 	nmeaParseSkip();
 	float alt = nmeaParseGetFloat();
 	
@@ -339,7 +310,7 @@ void nmeaParseGPRMC()
 {
 	NMEA_DEBUG("GPRMC");
 	
-	uint16_t time = nmeaParseGetInt16();
+	uint16_t time = nmeaParseGetInt32();
 	char status = nmeaParseGetChar();
 	float latVal = nmeaParseGetFloat();
 	char latSign = nmeaParseGetChar();
@@ -347,7 +318,7 @@ void nmeaParseGPRMC()
 	char lonSign = nmeaParseGetChar();
 	float speed = nmeaParseGetFloat();
 	float track = nmeaParseGetFloat();
-	uint32_t date =nmeaParseGetInt16();
+	uint32_t date =nmeaParseGetInt32();
 	float magVar = nmeaParseGetFloat();
 	char magVarSign = nmeaParseGetChar();
 	
@@ -364,8 +335,8 @@ void nmeaParsePMTK()
 	res = (*cmdStr++ - '0') * 10;
 	res = (*cmdStr++ - '0') * 1;
 
-	uint16_t cmd = nmeaParseGetInt16();
-	uint16_t flag = nmeaParseGetInt16();
+	uint16_t cmd = nmeaParseGetInt32();
+	uint16_t flag = nmeaParseGetInt32();
 
 	nmeaPMTK(res, cmd, flag);
 }
