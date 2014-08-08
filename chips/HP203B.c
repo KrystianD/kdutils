@@ -9,8 +9,16 @@ uint32_t hp203b_convEndTime = 0;
 
 uint8_t hp203bInit()
 {
+	if (hp203bI2CSendCommand(0x06, 0,0))
+		return HP203B_ERROR;
+
 	if (hp203bI2CSendCommand(HP203B_WRITE_REG | 0x0f, (uint8_t*)"\x80", 1))
 		return HP203B_ERROR;
+
+	// uint8_t d[1];
+	// if (hp203bI2CReadCommand(HP203B_READ_REG | 0x0f, d, 1))
+		// return HP203B_ERROR;
+	// myprintf("asd %02x\r\n", d[0]);
 
 	return HP203B_SUCCESS;
 }
@@ -18,7 +26,7 @@ uint8_t hp203bCalibrate()
 {
 	if (hp203bI2CSendCommand(HP203B_ANA_CAL, 0, 0))
 		return HP203B_ERROR;
-	return HP203B_ERROR;
+	return HP203B_SUCCESS;
 }
 uint8_t hp203bStartConversion(uint8_t OSR)
 {
