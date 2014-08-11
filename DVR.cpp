@@ -1,3 +1,8 @@
+/*
+ * DVR.cpp
+ * Copyright (C) 2014 Krystian Dużyński <krystian.duzynski@gmail.com>
+ */
+
 #include "DVR.h"
 
 #include <arpa/inet.h>
@@ -161,58 +166,8 @@ bool DVR::login(const string& username, const string& pass)
 		return false;
 	}
 	
-	//pk.print ();
-	
 	m_connId = *(uint32_t*)(pk.raw + 16);
-	
-	//printf ("connId: 0x%08x\n", m_connId);
-	/*
-	
-		TDVRPacket pk2;
-		char* tt=
-				"TransactionID:1\r\n"
-				"Method:GetParameterNames\r\n"
-				"ParameterName:Dahua.Device.VideoOut.General\r\n"
-				"\r\n";
-	
-		pk2.setCmd (0xf4);
-		pk2.setExtLen (strlen (tt));
-	
-		qDebug () << "1";
-		res = senddata (m_controlFd, pk2.raw, 32);
-		if (res == -1)
-		{
-			setError (ConnectionError, str (format ("unable1 to send login request packet: %1%") % strerror (errno)));
-			return false;
-		}
-		qDebug () << "12";
-		res = senddata (m_controlFd, (uint8_t*)tt, strlen (tt));
-		if (res == -1)
-		{
-			setError (ConnectionError, str (format ("unable2 to send login request packet: %1%") % strerror (errno)));
-			return false;
-		}
-	
-		qDebug () << "123";
-		res = readdata (m_controlFd, pk.raw, 32);
-		if (res == -1)
-		{
-			setError (ConnectionError, str (format ("unable3 to read login response packet: %1%") % strerror (errno)));
-			return false;
-		}
-		int len = pk.getExtLen ();
-		qDebug () << len;
-	
-		char buf[2000];
-		res = readdata (m_controlFd, (uint8_t*)buf, len);
-		if (res == -1)
-		{
-			setError (ConnectionError, str (format ("unable3 to read login response packet: %1%") % strerror (errno)));
-			return false;
-		}
-		//qDebug () << buf;
-	
-	*/
+
 	return true;
 }
 bool DVR::createChannel(int num, int frameCapacity)

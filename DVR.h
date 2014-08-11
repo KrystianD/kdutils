@@ -1,3 +1,8 @@
+/*
+ * DVR.h
+ * Copyright (C) 2014 Krystian Dużyński <krystian.duzynski@gmail.com>
+ */
+
 #ifndef __DVR_H__
 #define __DVR_H__
 
@@ -44,7 +49,6 @@ private:
 		int bufferLen;
 		
 		int width, height, fps;
-
 
 		// packet length (extension payload)
 		int packetLen;
