@@ -19,7 +19,7 @@ public:
 	void disconnect();
 	
 	bool login(const string& username, const string& pass);
-	bool createChannel(int num);
+	bool createChannel(int num, int frameCapacity);
 	bool removeChannel(int channel);
 	bool updateChannels();
 	bool ping();
@@ -27,6 +27,7 @@ public:
 	bool checkForData();
 	bool isAvail(int channel);
 	bool grabFrame(int channel, char** buffer, int* len);
+	bool releaseFrame(int channel);
 	QVector<int> getChannels();
 	
 	const string& getLastErrorMsg() const
@@ -43,10 +44,16 @@ private:
 		int bufferLen;
 		
 		int width, height, fps;
-		
-		// tmp packet
+
+
+		// packet length (extension payload)
 		int packetLen;
+		// current read bytes
 		int packetRead;
+		// total frame length (built of multiple packets)
+		int frameLen;
+		int frameRead;
+		bool frameReady;
 	};
 	
 	string m_host;

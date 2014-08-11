@@ -12,8 +12,8 @@
 #include <errno.h>
 #include <string.h>
 
-#include <QString>
-#include <QDebug>
+#define LOG(x,...) fprintf(stderr, "[DVR] " x "\n", ##__VA_ARGS__)
+#define LOGCH(ch, x,...) fprintf(stderr, "[DVR #%d] " x "\n", ch, ##__VA_ARGS__)
 
 class TDVRPacket
 {
@@ -40,11 +40,15 @@ public:
 	}
 	uint32_t getExtLen() const
 	{
-		return *(uint32_t*)(raw + 4);
+		return getU32(4);
 	}
 	void setU32(int offset, uint32_t val)
 	{
 		*(uint32_t*)(raw + offset) = val;
+	}
+	uint32_t getU32(int offset) const
+	{
+		return *(uint32_t*)(raw + offset);
 	}
 	void print()
 	{
@@ -95,7 +99,7 @@ void DVR::disconnect()
 {
 	for (size_t i = 0; i < m_conns.size(); i++)
 	{
-		qDebug() << "DVR: closing channel: " << m_conns[i].channel;
+		LOG("closing channel %d", m_conns[i].channel);
 		close(m_conns[i].fd);
 		if (m_conns[i].buffer)
 		{
@@ -133,8 +137,7 @@ bool DVR::login(const string& username, const string& pass)
 	{
 		setError(ConnectionError, getErrorText("unable to send login request packet"));
 		return false;
-	}
-	
+	}	
 	res = readdata(m_controlFd, pk.raw, 32);
 	if (res == -1)
 	{
@@ -212,7 +215,7 @@ bool DVR::login(const string& username, const string& pass)
 	*/
 	return true;
 }
-bool DVR::createChannel(int num)
+bool DVR::createChannel(int num, int frameCapacity)
 {
 	TDVRPacket pk;
 	int res;
@@ -223,6 +226,10 @@ bool DVR::createChannel(int num)
 	strm.bufferLen = 0;
 	strm.packetLen = 0;
 	strm.packetRead = 0;
+	strm.frameLen = 0;
+	strm.frameRead = 0;
+	strm.frameReady = 0;
+	strm.buffer = new char[frameCapacity];
 	
 	struct sockaddr_in serv_addr;
 	strm.fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -268,7 +275,7 @@ bool DVR::createChannel(int num)
 		setError(LoginError, buf);
 		return false;
 	}
-	qDebug() << "created for fd" << strm.fd;
+	LOG("created for fd %d", strm.fd);
 	
 	m_conns.push_back(strm);
 	
@@ -315,9 +322,8 @@ bool DVR::removeChannel(int channel)
 	}
 	
 	close(strm->fd);
-	qDebug() << "closed fd" << strm->fd;
 	
-	
+	delete [] strm->buffer;
 	for (size_t i = 0; i < m_conns.size(); i++)
 		if (m_conns[i].channel == channel)
 			m_conns.erase(m_conns.begin() + i);
@@ -388,14 +394,13 @@ bool DVR::checkForData()
 	for (size_t i = 0; i < m_conns.size(); i++)
 	{
 		TStreamConnection *strm = &m_conns[i];
-		//if (ch != -1 && strm->channel != ch) continue;
 		FD_SET(strm->fd, &fds);
 		if (strm->fd > maxFd) maxFd = strm->fd;
 	}
 	
 	timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 0 * 1000;
+	tv.tv_sec = 0;
+	tv.tv_usec = 200 * 1000;
 	int res = select(maxFd + 1, &fds, 0, 0, &tv);
 	if (res > 0)
 	{
@@ -403,6 +408,9 @@ bool DVR::checkForData()
 		{
 			TStreamConnection *strm = &m_conns[i];
 			
+			if (strm->frameReady)
+				continue;
+
 			if (!FD_ISSET(strm->fd, &fds))
 				continue;
 				
@@ -415,7 +423,6 @@ bool DVR::checkForData()
 					setError(ConnectionError, getErrorText("unable to read frame header"));
 					return false;
 				}
-				//qDebug () << QString (str (format ("%1%") % strm->fd).c_str ());
 				
 				if (pk.getCmd() != 0xbc)
 				{
@@ -436,36 +443,51 @@ bool DVR::checkForData()
 				
 				strm->packetLen = pk.getExtLen();
 				strm->packetRead = 0;
-				
-				if (strm->packetLen > strm->bufferLen)
-				{
-					if (strm->buffer)
-						delete [] strm->buffer;
-					strm->bufferLen = strm->packetLen * 150 / 100;
-					strm->buffer = new char[strm->bufferLen];
-				}
 			}
 			else if (strm->packetRead < strm->packetLen) // we're reading frame payload
 			{
 				int remaining = strm->packetLen - strm->packetRead;
-				int r = read(strm->fd, strm->buffer + strm->packetRead, remaining);
+				int r = read(strm->fd, strm->buffer + strm->frameRead, remaining);
 				if (r <= 0)
 				{
 					setError(ConnectionError, getErrorText("unable to read frame data"));
 					return false;
 				}
+
 				strm->packetRead += r;
-			}
-			else
-			{
-				qDebug() << "DO STH WITH THIS PACKET!!!!";
+				strm->frameRead += r;
+				LOGCH(strm->channel, "packet %d", r);
+
+				if (strm->frameLen == 0)
+				{
+					if (strm->packetRead >= 16)
+					{
+						strm->frameLen = *(uint32_t*)(strm->buffer + 12);
+						LOGCH(strm->channel, "frameLen %d", strm->frameLen);
+					}
+				}
+
+				if (strm->frameLen != 0)
+				{
+					if (strm->frameRead == strm->frameLen)
+					{
+						LOGCH(strm->channel, "got whole frame");
+						strm->frameReady = 1;
+					}
+				}
+
+				if (strm->packetRead == strm->packetLen)
+				{
+					LOGCH(strm->channel, "got whole packet");
+					strm->packetRead = 0;
+					strm->packetLen = 0;
+				}
 			}
 		}
 		return true;
 	}
 	else if (res == 0)
 	{
-		qDebug() << "noread";
 		return true;
 	}
 	else if (res < 0)
@@ -484,23 +506,36 @@ bool DVR::isAvail(int channel)
 			strm = &m_conns[i];
 	if (!strm) return false;
 	
-	return strm->packetLen > 0 && strm->packetLen == strm->packetRead;
+	return strm->frameReady;
 }
 bool DVR::grabFrame(int channel, char** buffer, int* len)
 {
-	TDVRPacket pk;
 	TStreamConnection *strm = 0;
-	
+
 	for (size_t i = 0; !strm && i < m_conns.size(); i++)
 		if (m_conns[i].channel == channel)
 			strm = &m_conns[i];
 	if (!strm) return false;
-	
+
 	*buffer = strm->buffer;
-	*len = strm->packetLen;
-	strm->packetLen = 0;
-	strm->packetRead = 0;
-	
+	*len = strm->frameLen;
+
+	return true;
+}
+bool DVR::releaseFrame(int channel)
+{
+	TStreamConnection *strm = 0;
+
+	for (size_t i = 0; !strm && i < m_conns.size(); i++)
+		if (m_conns[i].channel == channel)
+			strm = &m_conns[i];
+	if (!strm) return false;
+
+	strm->frameLen = 0;
+	strm->frameRead = 0;
+	strm->frameReady = 0;
+	LOGCH(channel, "frame released");
+
 	return true;
 }
 QVector<int> DVR::getChannels()
@@ -551,7 +586,7 @@ int DVR::readdata(int fd, uint8_t* data, int len)
 		}
 		else if (res == 0)
 		{
-			qDebug() << "wait";
+			LOG("wait");
 		}
 		else if (res < 0)
 		{
