@@ -39,6 +39,10 @@ public:
 		m_secs = secs;
 		m_usecs = usecs;
 		
+		int s = m_usecs / 1000000;
+		m_secs += s;
+		m_usecs -= 1000000 * s;
+		
 		itimerspec spec;
 		spec.it_interval.tv_sec = m_secs;
 		spec.it_interval.tv_nsec = m_usecs * 1000;
