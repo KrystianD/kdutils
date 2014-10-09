@@ -192,7 +192,7 @@ void ConsoleLoggerOutput::log(Logger::LogType type, int msgClass, const string& 
 		break;
 	case Logger::Info:
 		if (m_useColors)
-			printf(COLOR_GREEN "[info]" COLOR_DEFAULT " ");
+			printf(COLOR_GREEN "[info]" COLOR_OFF " ");
 		else
 			printf("[info] ");
 		break;
