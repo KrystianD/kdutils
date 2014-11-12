@@ -27,21 +27,22 @@ const uint8_t Bank1_Reg14[] =
 	0x41, 0x20, 0x08, 0x04, 0x81, 0x20, 0xCF, 0xF7, 0xFE, 0xFF, 0xFF
 };
 
-void rfm70InitRegisters()
+uint8_t rfm70InitRegisters()
 {
 	uint8_t i, j, val;
 	uint8_t buf[11];
 	
-	rfm70SetBank(1);
+	RFM70_ER(rfm70SetBank(1));
 	for (i = 0; i <= 0x0d; i++)
 	{
 		for (j = 0; j < 4; j++)
 			buf[j] = Bank1_Reg0_13[i][j];
-		rfm70WriteRegister(i, buf, 4);
+		RFM70_ER(rfm70WriteRegister(i, buf, 4));
 	}
 	for (j = 0; j < 11; j++)
 		buf[j] = Bank1_Reg14[j];
-	rfm70WriteRegister(0x0e, buf, 11);
+	RFM70_ER(rfm70WriteRegister(0x0e, buf, 11));
 	
-	rfm70SetBank(0);
+	RFM70_ER(rfm70SetBank(0));
+	return RFM70_SUCCESS;
 }
