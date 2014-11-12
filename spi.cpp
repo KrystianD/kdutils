@@ -49,19 +49,26 @@ bool SPI::rwData(const void* txData, int txLen, void* rxData, int rxLen)
 	
 	memset(xfer, 0, sizeof(xfer));
 	
-	int freq = 10 * 1000 * 1000;
+	int freq = 1 * 1000 * 1000;
 	
 	xfer[0].speed_hz = freq;
 	xfer[0].tx_buf = (unsigned long)txData;
 	xfer[0].rx_buf = 0;
 	xfer[0].len = txLen;
 	
-	xfer[1].speed_hz = freq;
-	xfer[1].tx_buf = 0;
-	xfer[1].rx_buf = (unsigned long)rxData;
-	xfer[1].len = rxLen;
-	
-	status = ioctl(fd, SPI_IOC_MESSAGE(2), xfer);
+	if (rxLen > 0)
+	{
+		xfer[1].speed_hz = freq;
+		xfer[1].tx_buf = 0;
+		xfer[1].rx_buf = (unsigned long)rxData;
+		xfer[1].len = rxLen;
+		
+		status = ioctl(fd, SPI_IOC_MESSAGE(2), xfer);
+	}
+	else
+	{
+		status = ioctl(fd, SPI_IOC_MESSAGE(1), xfer);
+	}
 	if (status < 0)
 	{
 		perror("SPI_IOC_MESSAGE");

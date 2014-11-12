@@ -15,21 +15,16 @@
 
 #include <RFM70_defs.h>
 
-// extern uint8_t rfm70_SPI_RW(uint8_t val);
-extern void rfm70EnableChip();
-extern void rfm70DisableChip();
+extern uint8_t rfm70EnableChip();
+extern uint8_t rfm70DisableChip();
 extern uint8_t rfm70SPIReadCommand(uint8_t cmd, uint8_t* data, uint8_t len);
 extern uint8_t rfm70SPISendCommand(uint8_t cmd, const uint8_t* data, uint8_t len);
-// extern void rfm70EnableSPI();
-// extern void rfm70DisableSPI();
 
 uint8_t rfm70Init();
 uint8_t rfm70InitRegisters();
 uint8_t rfm70ReadStatus(uint8_t* status);
 uint8_t rfm70GetBank(uint8_t* bank);
 uint8_t rfm70SetBank(uint8_t bank);
-// void rfm70SPIReadCommand(uint8_t cmd, uint8_t* data, uint8_t len);
-// void rfm70SPISendCommand(uint8_t cmd, const uint8_t* data, uint8_t len);
 
 uint8_t rfm70WriteRegister(uint8_t addr, const uint8_t* data, uint8_t len);
 uint8_t rfm70WriteRegisterValue(uint8_t addr, uint8_t value);
@@ -93,7 +88,7 @@ static inline uint8_t rfm70DisableFeatures()
 }
 
 #ifdef RFM70_DEBUG
-void rfm70PrintStatus();
+uint8_t rfm70PrintStatus();
 #endif
 
 #endif
