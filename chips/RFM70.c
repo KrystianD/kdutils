@@ -115,6 +115,23 @@ uint8_t rfm70SwitchToTxMode()
 	return RFM70_SUCCESS;
 }
 
+uint8_t rfm70SetBits(uint8_t addr, uint8_t mask)
+{
+	uint8_t val;
+	RFM70_ER(rfm70ReadRegisterValue(RFM70_STATUS, &val));
+	val |= mask;
+	RFM70_ER(rfm70WriteRegisterValue(RFM70_STATUS, val));
+	return RFM70_SUCCESS;
+}
+uint8_t rfm70ClearBits(uint8_t addr, uint8_t mask)
+{
+	uint8_t val;
+	RFM70_ER(rfm70ReadRegisterValue(RFM70_STATUS, &val));
+	val &= ~mask;
+	RFM70_ER(rfm70WriteRegisterValue(RFM70_STATUS, val));
+	return RFM70_SUCCESS;
+}
+
 //DEBUG
 #ifdef RFM70_DEBUG
 static char* bin(uint8_t v)
@@ -140,7 +157,7 @@ uint8_t rfm70PrintStatus()
 	RFM70_DEBUG("status: 0x%02x %s\r\n", status, bin(status));
 	RFM70_DEBUG("RBANK: %d  ", (status >> 7) & 0x01);
 	RFM70_DEBUG("RX_DR: %d  ", (status >> 6) & 0x01);
-	RFM70_DEBUG("TX_DR: %d  ", (status >> 5) & 0x01);
+	RFM70_DEBUG("TX_DS: %d  ", (status >> 5) & 0x01);
 	RFM70_DEBUG("MAX_RT: %d  ", (status >> 4) & 0x01);
 	RFM70_DEBUG("RX_P_NO: %3s  ", bin((status >> 1) & 0x07));
 	RFM70_DEBUG("TX_FULL: %d  ", (status >> 0) & 0x01);
@@ -191,7 +208,7 @@ uint8_t rfm70PrintStatus()
 	RFM70_DEBUG("RF_CH: %d\r\n", data);
 	
 	rfm70ReadRegisterValue(RFM70_RF_SETUP, &data);
-	RFM70_DEBUG("RF_DR: %d\r\n", (data >> 3) & 0x01);
+	RFM70_DEBUG("RF_DR: %d   RF_PWR: %s  LNA_HCURR: %d\r\n",(data >> 3) & 0x01, bin((data >> 1) & 0x03), data & 0x01);
 	
 	rfm70ReadRegisterValue(RFM70_CD, &data);
 	RFM70_DEBUG("CD: %d\r\n", data);
@@ -208,10 +225,9 @@ uint8_t rfm70PrintStatus()
 	            (data >> 0) & 0x0f);
 	
 	RFM70_ER(rfm70SetBank(1));
-	
 	RFM70_ER(rfm70ReadRegister(0x08, data2, 4));
 	RFM70_DEBUG("Chip ID: %02x%02x%02x%02x\r\n", data2[0], data2[1], data2[2], data2[3]);
-	
+
 	RFM70_ER(rfm70SetBank(0));
 	return RFM70_SUCCESS;
 }

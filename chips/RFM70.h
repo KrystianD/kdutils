@@ -35,6 +35,9 @@ uint8_t rfm70PowerUp();
 uint8_t rfm70SwitchToRxMode();
 uint8_t rfm70SwitchToTxMode();
 
+uint8_t rfm70SetBits(uint8_t addr, uint8_t mask);
+uint8_t rfm70ClearBits(uint8_t addr, uint8_t mask);
+
 static inline uint8_t rfm70SetTxAddress(const char* addr, uint8_t len)
 {
 	RFM70_ER(rfm70WriteRegister(RFM70_TX_ADDR, (const uint8_t*)addr, len));
@@ -89,6 +92,23 @@ static inline uint8_t rfm70EnableFeatures()
 static inline uint8_t rfm70DisableFeatures()
 {
 	RFM70_ER(rfm70SetFeatures(0x00));
+	return RFM70_SUCCESS;
+}
+static inline uint8_t rfm70EnableCRC()
+{
+	RFM70_ER(rfm70SetBits(RFM70_CONFIG, RFM70_CONFIG_EN_CRC));
+	return RFM70_SUCCESS;
+}
+static inline uint8_t rfm70DisableCRC()
+{
+	RFM70_ER(rfm70ClearBits(RFM70_CONFIG, RFM70_CONFIG_EN_CRC));
+	return RFM70_SUCCESS;
+}
+static inline uint8_t rfm70DataSent(uint8_t* status)
+{
+	uint8_t val;
+	RFM70_ER(rfm70ReadStatus(&val));
+	*status = val & RFM70_STATUS_TX_DS ? 1 : 0;
 	return RFM70_SUCCESS;
 }
 
