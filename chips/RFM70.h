@@ -60,6 +60,11 @@ static inline uint8_t rfm70WriteTxPayload(const uint8_t* data, uint8_t len)
 	RFM70_ER(rfm70SPISendCommand(RFM70_WRITE_TX_PL, data, len));
 	return RFM70_SUCCESS;
 }
+static inline uint8_t rfm70WriteTxPayloadNOACK(const uint8_t* data, uint8_t len)
+{
+	RFM70_ER(rfm70SPISendCommand(RFM70_WRITE_TX_PL_NOACK, data, len));
+	return RFM70_SUCCESS;
+}
 static inline uint8_t rfm70ReadRxPayload(uint8_t* data, uint8_t len)
 {
 	RFM70_ER(rfm70SPIReadCommand(RFM70_READ_RX_PL, data, len));

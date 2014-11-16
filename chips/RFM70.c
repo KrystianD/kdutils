@@ -38,7 +38,6 @@ uint8_t rfm70SetBank(uint8_t bank)
 	{
 		RFM70_ER(rfm70SPISendCommand(RFM70_ACTIVATE, (const uint8_t*)"\x53", 1));
 		RFM70_ER(rfm70GetBank(&curBank));
-		RFM70_ER(rfm70GetBank(&curBank));
 		if (curBank != bank)
 			return RFM70_ERROR;
 	}
@@ -69,21 +68,21 @@ uint8_t rfm70ReadRegisterValue(uint8_t addr, uint8_t* val)
 uint8_t rfm70PowerDown()
 {
 	uint8_t val;
-	rfm70EnableChip();
+	// rfm70EnableChip();
 	RFM70_ER(rfm70ReadRegisterValue(RFM70_CONFIG, &val));
 	val &= ~RFM70_CONFIG_PWR_UP;
 	RFM70_ER(rfm70WriteRegisterValue(RFM70_CONFIG, val));
-	rfm70DisableChip();
+	// rfm70DisableChip();
 	return RFM70_SUCCESS;
 }
 uint8_t rfm70PowerUp()
 {
 	uint8_t val;
-	rfm70EnableChip();
+	// rfm70EnableChip();
 	RFM70_ER(rfm70ReadRegisterValue(RFM70_CONFIG, &val));
 	val |= RFM70_CONFIG_PWR_UP;
 	RFM70_ER(rfm70WriteRegisterValue(RFM70_CONFIG, val));
-	rfm70DisableChip();
+	// rfm70DisableChip();
 	return RFM70_SUCCESS;
 }
 
@@ -207,11 +206,8 @@ uint8_t rfm70PrintStatus()
 	RFM70_DEBUG("PLOS_CNT: %d  ARC_CNT: %d\r\n",
 	            (data >> 4) & 0x0f,
 	            (data >> 0) & 0x0f);
-	// RFM70_DEBUG ("0x%02x\r\n", data[0]);
 	
 	RFM70_ER(rfm70SetBank(1));
-	rfm70ReadStatus(&status);
-	RFM70_DEBUG("status: %s\r\n", bin(status));
 	
 	RFM70_ER(rfm70ReadRegister(0x08, data2, 4));
 	RFM70_DEBUG("Chip ID: %02x%02x%02x%02x\r\n", data2[0], data2[1], data2[2], data2[3]);
