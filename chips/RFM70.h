@@ -23,6 +23,7 @@ extern uint8_t rfm70SPISendCommand(uint8_t cmd, const uint8_t* data, uint8_t len
 uint8_t rfm70Init();
 uint8_t rfm70InitRegisters();
 uint8_t rfm70ReadStatus(uint8_t* status);
+uint8_t rfm70ClearStatus();
 uint8_t rfm70GetBank(uint8_t* bank);
 uint8_t rfm70SetBank(uint8_t bank);
 
@@ -104,11 +105,38 @@ static inline uint8_t rfm70DisableCRC()
 	RFM70_ER(rfm70ClearBits(RFM70_CONFIG, RFM70_CONFIG_EN_CRC));
 	return RFM70_SUCCESS;
 }
+static inline uint8_t rfm70Set1Mbps()
+{
+	RFM70_ER(rfm70ClearBits(RFM70_RF_SETUP, RFM70_RF_SETUP_RF_DR));
+	return RFM70_SUCCESS;
+}
+static inline uint8_t rfm70Set2Mbps()
+{
+	RFM70_ER(rfm70SetBits(RFM70_RF_SETUP, RFM70_RF_SETUP_RF_DR));
+	return RFM70_SUCCESS;
+}
+static inline uint8_t rfm70SetCRC1bytes()
+{
+	RFM70_ER(rfm70ClearBits(RFM70_CONFIG, RFM70_CONFIG_CRCO));
+	return RFM70_SUCCESS;
+}
+static inline uint8_t rfm70SetCRC2bytes()
+{
+	RFM70_ER(rfm70SetBits(RFM70_CONFIG, RFM70_CONFIG_CRCO));
+	return RFM70_SUCCESS;
+}
 static inline uint8_t rfm70DataSent(uint8_t* status)
 {
 	uint8_t val;
 	RFM70_ER(rfm70ReadStatus(&val));
 	*status = val & RFM70_STATUS_TX_DS ? 1 : 0;
+	return RFM70_SUCCESS;
+}
+static inline uint8_t rfm70DataSentOrMaxRetr(uint8_t* status)
+{
+	uint8_t val;
+	RFM70_ER(rfm70ReadStatus(&val));
+	*status = (val & (RFM70_STATUS_TX_DS | RFM70_STATUS_MAX_RT)) ? 1 : 0;
 	return RFM70_SUCCESS;
 }
 

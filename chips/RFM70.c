@@ -30,6 +30,13 @@ uint8_t rfm70GetBank(uint8_t* bank)
 	*bank = status & 0x80 ? 1 : 0;
 	return RFM70_SUCCESS;
 }
+uint8_t rfm70ClearStatus()
+{
+	uint8_t val;
+	RFM70_ER(rfm70ReadRegisterValue(RFM70_STATUS, &val));
+	RFM70_ER(rfm70WriteRegisterValue(RFM70_STATUS, val));
+	return RFM70_SUCCESS;
+}
 uint8_t rfm70SetBank(uint8_t bank)
 {
 	uint8_t curBank;
@@ -92,8 +99,7 @@ uint8_t rfm70SwitchToRxMode()
 	
 	RFM70_ER(rfm70SPISendCommand(RFM70_FLUSH_RX, 0, 0));
 	
-	RFM70_ER(rfm70ReadRegisterValue(RFM70_STATUS, &val));
-	RFM70_ER(rfm70WriteRegisterValue(RFM70_STATUS, val));
+	RFM70_ER(rfm70ClearStatus());
 	
 	RFM70_ER(rfm70ReadRegisterValue(RFM70_CONFIG, &val));
 	val |= RFM70_CONFIG_PRIM_RX;
@@ -106,8 +112,7 @@ uint8_t rfm70SwitchToTxMode()
 	
 	RFM70_ER(rfm70SPISendCommand(RFM70_FLUSH_TX, 0, 0));
 	
-	RFM70_ER(rfm70ReadRegisterValue(RFM70_STATUS, &val));
-	RFM70_ER(rfm70WriteRegisterValue(RFM70_STATUS, val));
+	RFM70_ER(rfm70ClearStatus());
 	
 	RFM70_ER(rfm70ReadRegisterValue(RFM70_CONFIG, &val));
 	val &= ~RFM70_CONFIG_PRIM_RX;
@@ -118,17 +123,17 @@ uint8_t rfm70SwitchToTxMode()
 uint8_t rfm70SetBits(uint8_t addr, uint8_t mask)
 {
 	uint8_t val;
-	RFM70_ER(rfm70ReadRegisterValue(RFM70_STATUS, &val));
+	RFM70_ER(rfm70ReadRegisterValue(addr, &val));
 	val |= mask;
-	RFM70_ER(rfm70WriteRegisterValue(RFM70_STATUS, val));
+	RFM70_ER(rfm70WriteRegisterValue(addr, val));
 	return RFM70_SUCCESS;
 }
 uint8_t rfm70ClearBits(uint8_t addr, uint8_t mask)
 {
 	uint8_t val;
-	RFM70_ER(rfm70ReadRegisterValue(RFM70_STATUS, &val));
+	RFM70_ER(rfm70ReadRegisterValue(addr, &val));
 	val &= ~mask;
-	RFM70_ER(rfm70WriteRegisterValue(RFM70_STATUS, val));
+	RFM70_ER(rfm70WriteRegisterValue(addr, val));
 	return RFM70_SUCCESS;
 }
 

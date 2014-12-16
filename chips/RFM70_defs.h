@@ -35,6 +35,7 @@
 #define RFM70_SETUP_RETR     0x04  // Setup Auto. Retrans
 #define RFM70_RF_CH          0x05  // RF channel
 #define RFM70_RF_SETUP       0x06  // RF setup
+#    define RFM70_RF_SETUP_RF_DR       (1 << 3)
 #define RFM70_STATUS         0x07  // Status
 #    define RFM70_STATUS_RX_DR 	       (1 << 6)
 #    define RFM70_STATUS_TX_DS 	       (1 << 5)
