@@ -1,5 +1,6 @@
 #include "UdpSocket.h"
 
+// #include <stdio.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -35,7 +36,7 @@ bool UdpSocket::init()
 	memset((char*)&myaddr, 0, sizeof(myaddr));
 	myaddr.sin_family = AF_INET;
 	myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	myaddr.sin_port = htons(9999);
+	myaddr.sin_port = htons(m_port);
 	
 	if (bind(m_sockfd, (struct sockaddr*)&myaddr, sizeof(myaddr)) < 0)
 	{
@@ -90,20 +91,22 @@ bool UdpSocket::process()
 	return true;
 }
 
-void UdpSocket::sendData(const string& ip, const void* data, int len)
+bool UdpSocket::sendData(const string& ip, const void* data, int len)
 {
 	struct sockaddr_in remaddr;
 	remaddr.sin_family = AF_INET;
-	remaddr.sin_port = htons(9999);
+	remaddr.sin_port = htons(m_port);
 	inet_pton(AF_INET, ip.c_str(), &(remaddr.sin_addr));
 	
 	// buffer.print();
 	if (sendto(m_sockfd, data, len, 0, (struct sockaddr*)&remaddr, sizeof(remaddr)) < 0)
 	{
-		printf("send fail\n");
+		return false;
+		// printf("send fail\n");
 	}
 	else
 	{
+		return true;
 		// printf("send OK\n");
 	}
 }

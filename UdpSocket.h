@@ -34,7 +34,7 @@ public:
 		m_timeout = timeout;
 	}
 	
-	void sendData(const string& ip, const void* data, int len);
+	bool sendData(const string& ip, const void* data, int len);
 	
 	const string& getLastError() const
 	{
