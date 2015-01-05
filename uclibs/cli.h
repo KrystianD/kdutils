@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef void (*cli_handler_t)(char *args);
+typedef void (*cli_handler_t)(const char *args);
 
 typedef struct
 {
