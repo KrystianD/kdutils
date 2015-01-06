@@ -1,6 +1,7 @@
 #ifndef __UDP_SERVER_H__
 #define __UDP_SERVER_H__
 
+#include <stdint.h>
 #include <string>
 using namespace std;
 
@@ -18,6 +19,7 @@ public:
 	~UdpSocket();
 	
 	bool init();
+	bool bind();
 	void close();
 	bool process();
 
@@ -34,7 +36,7 @@ public:
 		m_timeout = timeout;
 	}
 	
-	bool sendData(const string& ip, const void* data, int len);
+	bool sendData(const string& ip, uint16_t port, const void* data, int len);
 	
 	const string& getLastError() const
 	{
@@ -42,6 +44,8 @@ public:
 	}
 
 	int getFd() const { return m_sockfd; }
+
+	const string& getErrorString() const { return m_lastErrorStr; }
 	
 private:
 	int m_sockfd;

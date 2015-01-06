@@ -25,12 +25,16 @@ UdpSocket::~UdpSocket()
 
 bool UdpSocket::init()
 {
-	if ((m_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	if ((m_sockfd = ::socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
 		m_lastErrorStr = string("cannot create socket: ") + getErrnoString();
 		return false;
 	}
 	
+	return true;
+}
+bool UdpSocket::bind()
+{
 	struct sockaddr_in myaddr;
 	
 	memset((char*)&myaddr, 0, sizeof(myaddr));
@@ -38,7 +42,7 @@ bool UdpSocket::init()
 	myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	myaddr.sin_port = htons(m_port);
 	
-	if (bind(m_sockfd, (struct sockaddr*)&myaddr, sizeof(myaddr)) < 0)
+	if (::bind(m_sockfd, (struct sockaddr*)&myaddr, sizeof(myaddr)) < 0)
 	{
 		m_lastErrorStr = string("bind failed: ") + getErrnoString();
 		return false;
@@ -91,11 +95,11 @@ bool UdpSocket::process()
 	return true;
 }
 
-bool UdpSocket::sendData(const string& ip, const void* data, int len)
+bool UdpSocket::sendData(const string& ip, uint16_t port, const void* data, int len)
 {
 	struct sockaddr_in remaddr;
 	remaddr.sin_family = AF_INET;
-	remaddr.sin_port = htons(m_port);
+	remaddr.sin_port = htons(port);
 	inet_pton(AF_INET, ip.c_str(), &(remaddr.sin_addr));
 	
 	// buffer.print();
