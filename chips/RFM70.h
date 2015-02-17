@@ -6,6 +6,10 @@
 #ifndef __RFM70_H__
 #define __RFM70_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #define RFM70_SUCCESS 0
@@ -142,6 +146,10 @@ static inline uint8_t rfm70DataSentOrMaxRetr(uint8_t* status)
 
 #ifdef RFM70_DEBUG
 uint8_t rfm70PrintStatus();
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif
