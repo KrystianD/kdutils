@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifndef WIN32
+#if !(defined(WIN32) || defined(_WIN32))
 #include <grp.h>
 #endif
 
@@ -27,7 +27,7 @@ uint32_t getTicksUS()
 }
 std::string getErrnoString()
 {
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32)
 	return "<noerr_win>";
 #else
 	char buf[256];

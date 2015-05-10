@@ -1,6 +1,11 @@
 #include "UdpSocket.h"
 
-// #include <stdio.h>
+#if defined(WIN32) || defined(_WIN32)
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#define socklen_t int
+#else
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -8,6 +13,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <unistd.h>
+#endif
 
 #include <kdutils.h>
 
@@ -52,7 +58,11 @@ bool UdpSocket::bind()
 }
 void UdpSocket::close()
 {
+#if defined(WIN32) || defined(_WIN32)
+	closesocket(m_sockfd);
+#else
 	::close(m_sockfd);
+#endif
 }
 bool UdpSocket::process()
 {
@@ -81,10 +91,11 @@ bool UdpSocket::process()
 		{
 			struct sockaddr_in remaddr;
 			socklen_t addrlen = sizeof(remaddr);
-			char buf[1500];
+			char buf[64*1024];
 			int recvlen = recvfrom(m_sockfd, buf, sizeof(buf), 0, (struct sockaddr*)&remaddr, &addrlen);
 			
-			char ip[INET_ADDRSTRLEN];
+			// char ip[INET_ADDRSTRLEN];
+			char ip[100];
 			inet_ntop(AF_INET, &(remaddr.sin_addr), ip, sizeof(ip));
 			
 			if (m_listener)
@@ -100,10 +111,14 @@ bool UdpSocket::sendData(const string& ip, uint16_t port, const void* data, int 
 	struct sockaddr_in remaddr;
 	remaddr.sin_family = AF_INET;
 	remaddr.sin_port = htons(port);
+#if defined(WIN32) || defined(_WIN32)
+	remaddr.sin_addr.S_un.S_addr = inet_addr(ip.c_str());
+#else
 	inet_pton(AF_INET, ip.c_str(), &(remaddr.sin_addr));
+#endif
 	
 	// buffer.print();
-	if (sendto(m_sockfd, data, len, 0, (struct sockaddr*)&remaddr, sizeof(remaddr)) < 0)
+	if (sendto(m_sockfd, (const char*)data, len, 0, (struct sockaddr*)&remaddr, sizeof(remaddr)) < 0)
 	{
 		return false;
 		// printf("send fail\n");
