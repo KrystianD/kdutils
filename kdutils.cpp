@@ -255,3 +255,31 @@ std::vector<std::string> parseArgs(std::string str, int count)
 	
 	return newParts;
 }
+
+// getch
+#include <termios.h>
+#include <stdio.h>
+
+static char _getch(int echo)
+{
+	struct termios oldCfg, newCfg;
+
+	tcgetattr(0, &oldCfg);
+	newCfg = oldCfg;
+	newCfg.c_lflag &= ~ICANON;
+	newCfg.c_lflag &= echo ? ECHO : ~ECHO;
+	tcsetattr(0, TCSANOW, &newCfg);
+
+	char ch = getchar();
+
+	tcsetattr(0, TCSANOW, &oldCfg);
+	return ch;
+}
+char getch()
+{
+	return _getch(0);
+}
+char getche()
+{
+	return _getch(1);
+}
