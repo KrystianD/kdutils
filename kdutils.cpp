@@ -257,6 +257,7 @@ std::vector<std::string> parseArgs(std::string str, int count)
 }
 
 // getch
+#ifndef WIN32
 #include <termios.h>
 #include <stdio.h>
 
@@ -283,3 +284,4 @@ char getche()
 {
 	return _getch(1);
 }
+#endif
