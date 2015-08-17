@@ -6,9 +6,7 @@
 #ifndef __RFM70_H__
 #define __RFM70_H__
 
-#include <public.h>
-#include "hardware.h"
-#include "settings.h"
+#include <stdint.h>
 
 #include "RFM70_defs.h"
 
