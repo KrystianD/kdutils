@@ -22,14 +22,20 @@
 
 // Registers
 #define RFM70_CONFIG         0x00  // Config
-#    define RFM70_CONFIG_PWR_UP  0x02
-#    define RFM70_CONFIG_PRIM_RX 0x01
+#    define RFM70_CONFIG_MASK_RX_DR  0x40
+#    define RFM70_CONFIG_MASK_TX_DS  0x20
+#    define RFM70_CONFIG_MASK_MAX_RT 0x10
+#    define RFM70_CONFIG_EN_CRC      0x08
+#    define RFM70_CONFIG_CRCO        0x04
+#    define RFM70_CONFIG_PWR_UP      0x02
+#    define RFM70_CONFIG_PRIM_RX     0x01
 #define RFM70_EN_AA          0x01  // Enable Auto Acknowledgment
 #define RFM70_EN_RXADDR      0x02  // Enabled RX addresses
 #define RFM70_SETUP_AW       0x03  // Setup address width
 #define RFM70_SETUP_RETR     0x04  // Setup Auto. Retrans
 #define RFM70_RF_CH          0x05  // RF channel
 #define RFM70_RF_SETUP       0x06  // RF setup
+#    define RFM70_RF_SETUP_RF_DR       (1 << 3)
 #define RFM70_STATUS         0x07  // Status
 #    define RFM70_STATUS_RX_DR 	       (1 << 6)
 #    define RFM70_STATUS_TX_DS 	       (1 << 5)

@@ -29,4 +29,11 @@ int changeUidGid(int uid, gid_t gid);
 
 std::vector<std::string> parseArgs(std::string str, int count);
 
+#ifndef WIN32
+char getch();
+char getche();
+#else
+#include <conio.h>
+#endif
+
 #endif
