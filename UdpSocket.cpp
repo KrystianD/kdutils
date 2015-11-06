@@ -1,6 +1,11 @@
 #include "UdpSocket.h"
 
-// #include <stdio.h>
+#if defined(WIN32) || defined(_WIN32)
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#define socklen_t int
+#else
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -8,6 +13,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <unistd.h>
+#endif
 
 #include <kdutils.h>
 
@@ -33,6 +39,11 @@ bool UdpSocket::init()
 	
 	return true;
 }
+bool UdpSocket::bind(int port)
+{
+	m_port = port;
+	return bind();
+}
 bool UdpSocket::bind()
 {
 	struct sockaddr_in myaddr;
@@ -52,7 +63,11 @@ bool UdpSocket::bind()
 }
 void UdpSocket::close()
 {
+#if defined(WIN32) || defined(_WIN32)
+	closesocket(m_sockfd);
+#else
 	::close(m_sockfd);
+#endif
 }
 bool UdpSocket::process()
 {
@@ -81,10 +96,11 @@ bool UdpSocket::process()
 		{
 			struct sockaddr_in remaddr;
 			socklen_t addrlen = sizeof(remaddr);
-			char buf[1500];
+			char buf[64*1024];
 			int recvlen = recvfrom(m_sockfd, buf, sizeof(buf), 0, (struct sockaddr*)&remaddr, &addrlen);
 			
-			char ip[INET_ADDRSTRLEN];
+			// char ip[INET_ADDRSTRLEN];
+			char ip[100];
 			inet_ntop(AF_INET, &(remaddr.sin_addr), ip, sizeof(ip));
 			
 			if (m_listener)
@@ -95,15 +111,19 @@ bool UdpSocket::process()
 	return true;
 }
 
-bool UdpSocket::sendData(const string& ip, uint16_t port, const void* data, int len)
+bool UdpSocket::send(const string& ip, uint16_t port, const void* data, int len)
 {
 	struct sockaddr_in remaddr;
 	remaddr.sin_family = AF_INET;
 	remaddr.sin_port = htons(port);
+#if defined(WIN32) || defined(_WIN32)
+	remaddr.sin_addr.S_un.S_addr = inet_addr(ip.c_str());
+#else
 	inet_pton(AF_INET, ip.c_str(), &(remaddr.sin_addr));
+#endif
 	
 	// buffer.print();
-	if (sendto(m_sockfd, data, len, 0, (struct sockaddr*)&remaddr, sizeof(remaddr)) < 0)
+	if (sendto(m_sockfd, (const char*)data, len, 0, (struct sockaddr*)&remaddr, sizeof(remaddr)) < 0)
 	{
 		return false;
 		// printf("send fail\n");
@@ -113,4 +133,46 @@ bool UdpSocket::sendData(const string& ip, uint16_t port, const void* data, int 
 		return true;
 		// printf("send OK\n");
 	}
+}
+int UdpSocket::read(string& ip, uint16_t& port, void* data, int len, int timeout)
+{
+	timeval tv;
+	fd_set fds;
+	
+	tv.tv_sec = timeout / 1000;
+	tv.tv_usec = timeout * 1000;
+	
+	FD_ZERO(&fds);
+	FD_SET(m_sockfd, &fds);
+	
+	// checking for new incoming connections
+	int res = select(m_sockfd + 1, &fds, 0, 0, &tv);
+	if (res == -1)
+	{
+		if (errno != EINTR)
+		{
+			m_lastErrorStr = string("select failed: ") + getErrnoString();
+			return -1;
+		}
+	}
+	else
+	{
+		if (FD_ISSET(m_sockfd, &fds))
+		{
+			struct sockaddr_in remaddr;
+			socklen_t addrlen = sizeof(remaddr);
+			int recvlen = recvfrom(m_sockfd, data, len, 0, (struct sockaddr*)&remaddr, &addrlen);
+			
+			// char ip[INET_ADDRSTRLEN];
+			char ipd[100];
+			inet_ntop(AF_INET, &(remaddr.sin_addr), ipd, sizeof(ipd));
+			
+			ip = ipd;
+			port = ntohs(remaddr.sin_port);
+
+			return recvlen;
+		}
+	}
+	
+	return 0;
 }
