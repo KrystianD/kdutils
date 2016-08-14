@@ -28,9 +28,9 @@ Example configuration:
 #define ADVIM_FLAGS_ENABLEPATTERN          (1 << (0 + 3))
 
 #define ADVIM_GETSTATE(x) ((x) & 0x07)
-#define ADVIM_SETSTATE(x,state) ((x) = (x) & ~0x07 | (state))
+#define ADVIM_SETSTATE(x,state) ((x) = ((x) & ~0x07) | (state))
 #define ADVIM_GETFLAGS(x) ((x) & ~0x07)
-#define ADVIM_SETFLAGS(x,flags) ((x) = (x) & 0x07 | (flags))
+#define ADVIM_SETFLAGS(x,flags) ((x) = ((x) & 0x07) | (flags))
 
 #define ADVIM_PATTERNIDX_ACTIVEHIGH 0x80
 #define ADVIM_PATTERNIDX_ACTIVELOW  0x40
@@ -68,11 +68,11 @@ extern void onInputHigh (uint8_t idx);
 
 static void advimSetState (uint8_t idx, uint8_t state)
 {
-	ADVIM_inputs[idx].state_flags = ADVIM_inputs[idx].state_flags & ~0x07 | state;
+	ADVIM_inputs[idx].state_flags = (ADVIM_inputs[idx].state_flags & ~0x07) | state;
 }
 static void advimSetFlags (uint8_t idx, uint8_t flags)
 {
-	ADVIM_inputs[idx].state_flags = ADVIM_inputs[idx].state_flags & 0x07 | flags;
+	ADVIM_inputs[idx].state_flags = (ADVIM_inputs[idx].state_flags & 0x07) | flags;
 }
 static void advimSetDebounceTime (uint8_t idx, uint8_t time)
 {
