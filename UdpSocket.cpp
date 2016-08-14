@@ -134,19 +134,29 @@ bool UdpSocket::send(const string& ip, uint16_t port, const void* data, int len)
 		// printf("send OK\n");
 	}
 }
-int UdpSocket::read(string& ip, uint16_t& port, void* data, int len, int timeout)
+int UdpSocket::read(string& ip, uint16_t& port, void* data, int len, uint32_t timeout)
 {
 	timeval tv;
 	fd_set fds;
 	
-	tv.tv_sec = timeout / 1000;
-	tv.tv_usec = timeout * 1000;
+	struct timeval timeout_val = {0};
+	struct timeval *timeout_ptr;
+	if (timeout == 0xffffffff)
+	{
+		timeout_ptr = 0;
+	}
+	else
+	{
+		timeout_val.tv_sec = timeout / 1000;
+		timeout_val.tv_usec = (timeout - timeout_val.tv_sec * 1000) * 1000;
+		timeout_ptr = &timeout_val;
+	}
 	
 	FD_ZERO(&fds);
 	FD_SET(m_sockfd, &fds);
 	
 	// checking for new incoming connections
-	int res = select(m_sockfd + 1, &fds, 0, 0, &tv);
+	int res = select(m_sockfd + 1, &fds, 0, 0, timeout_ptr);
 	if (res == -1)
 	{
 		if (errno != EINTR)

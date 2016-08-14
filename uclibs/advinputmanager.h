@@ -1,9 +1,7 @@
 #ifndef __ADVINPUTMANAGER__
 #define __ADVINPUTMANAGER__
 
-#include <public.h>
 #include "settings.h"
-#include "hardware.h"
 
 /*
 Example configuration:

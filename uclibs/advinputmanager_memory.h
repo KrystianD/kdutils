@@ -1,7 +1,7 @@
 #ifndef __ADVINPUTMANAGER_MEMORY__
 #define __ADVINPUTMANAGER_MEMORY__
 
-#include <public.h>
+#include <stdint.h>
 
 struct TInputAddr
 {

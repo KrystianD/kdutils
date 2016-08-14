@@ -3,7 +3,11 @@
 
 #include <stdint.h>
 
-typedef void (*cli_handler_t)(const char *args);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef void (*cli_handler_t)(char *args);
 
 typedef struct
 {
@@ -16,5 +20,9 @@ extern void cliPutChar(char c);
 
 void cliInit();
 void cliProcessChar(char c);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

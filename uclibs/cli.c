@@ -2,36 +2,36 @@
 
 #include <string.h>
 
-static char cli_lineBuffer[100];
-static int cli_lineIdx = 0;
+static char lineBuffer[100];
+static int lineIdx = 0;
 
-void cli_print(char *s);
-int myisspace(char c);
-char *trim(char *str);
+static void print(const char* s);
+static int isspace(char c);
+static char* trim(char* str);
 
 void cliInit()
 {
 }
 void cliProcessChar(char c)
 {
-	cli_lineBuffer[cli_lineIdx] = c;
+	lineBuffer[lineIdx] = c;
 
 	if (c == 127) // backspace
 	{
-		if (cli_lineIdx)
+		if (lineIdx)
 		{
 			cliPutChar(0x08);
 			cliPutChar(' ');
 			cliPutChar(0x08);
-			cli_lineIdx--;
+			lineIdx--;
 		}
 	}
 	else if (c == '\n' || c == '\r')
 	{
-		cli_lineBuffer[cli_lineIdx] = 0;
-		char *s = trim(cli_lineBuffer);
+		lineBuffer[lineIdx] = 0;
+		char* s = trim(lineBuffer);
 
-		cli_lineIdx = 0;
+		lineIdx = 0;
 
 		char *sp = strchr(s, ' ');
 		if (sp)
@@ -53,41 +53,40 @@ void cliProcessChar(char c)
 		}
 		if (s && strlen(s))
 		{
-			cli_print("invalid command\r\n");
+			print("invalid command\r\n");
 		}
-		cli_print("> ");
+		print("> ");
 	}
 	else
 	{
 		cliPutChar(c);
-		cli_lineIdx++;
-		if (cli_lineIdx == 100)
-			cli_lineIdx = 0;
+		lineIdx++;
+		if (lineIdx == sizeof(lineBuffer))
+			lineIdx = 0;
 	}
 }
 
-// priv
-void cli_print(char *s)
+void print(const char* s)
 {
 	while (*s)
 		cliPutChar(*s++);
 }
 
-int myisspace(char c)
+int isspace(char c)
 {
 	return c == ' ' || c == '\r' || c == '\n' || c == '\t';
 }
-char *trim(char *str)
+char* trim(char* str)
 {
-  char *end;
+  char* end;
 
-  while (myisspace(*str)) str++;
+  while (isspace(*str)) str++;
 
   if (*str == 0)
     return str;
 
   end = str + strlen(str) - 1;
-  while (end > str && myisspace(*end)) end--;
+  while (end > str && isspace(*end)) end--;
 
   *(end + 1) = 0;
 

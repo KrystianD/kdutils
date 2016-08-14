@@ -4,7 +4,7 @@
 
 static void tmpPrint ()
 {
-	u8 i;
+	uint8_t i;
 #ifdef ADVIM_DEBUG
 #ifdef ADVIM_PATTERNENABLED
 	if (ADVIM_patternIdx & ADVIM_PATTERNIDX_ACTIVEHIGH)

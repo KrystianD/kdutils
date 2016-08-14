@@ -38,7 +38,7 @@ public:
 	}
 	
 	bool send(const string& ip, uint16_t port, const void* data, int len);
-	int read(string& ip, uint16_t& port, void* data, int len, int timeout = 0);
+	int read(string& ip, uint16_t& port, void* data, int len, uint32_t timeout = 0);
 	
 	const string& getLastError() const
 	{
