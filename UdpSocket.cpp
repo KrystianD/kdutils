@@ -39,6 +39,11 @@ bool UdpSocket::init()
 	
 	return true;
 }
+bool UdpSocket::bind(int port)
+{
+	m_port = port;
+	return bind();
+}
 bool UdpSocket::bind()
 {
 	struct sockaddr_in myaddr;
@@ -106,7 +111,7 @@ bool UdpSocket::process()
 	return true;
 }
 
-bool UdpSocket::sendData(const string& ip, uint16_t port, const void* data, int len)
+bool UdpSocket::send(const string& ip, uint16_t port, const void* data, int len)
 {
 	struct sockaddr_in remaddr;
 	remaddr.sin_family = AF_INET;
@@ -128,4 +133,46 @@ bool UdpSocket::sendData(const string& ip, uint16_t port, const void* data, int 
 		return true;
 		// printf("send OK\n");
 	}
+}
+int UdpSocket::read(string& ip, uint16_t& port, void* data, int len, int timeout)
+{
+	timeval tv;
+	fd_set fds;
+	
+	tv.tv_sec = timeout / 1000;
+	tv.tv_usec = timeout * 1000;
+	
+	FD_ZERO(&fds);
+	FD_SET(m_sockfd, &fds);
+	
+	// checking for new incoming connections
+	int res = select(m_sockfd + 1, &fds, 0, 0, &tv);
+	if (res == -1)
+	{
+		if (errno != EINTR)
+		{
+			m_lastErrorStr = string("select failed: ") + getErrnoString();
+			return -1;
+		}
+	}
+	else
+	{
+		if (FD_ISSET(m_sockfd, &fds))
+		{
+			struct sockaddr_in remaddr;
+			socklen_t addrlen = sizeof(remaddr);
+			int recvlen = recvfrom(m_sockfd, data, len, 0, (struct sockaddr*)&remaddr, &addrlen);
+			
+			// char ip[INET_ADDRSTRLEN];
+			char ipd[100];
+			inet_ntop(AF_INET, &(remaddr.sin_addr), ipd, sizeof(ipd));
+			
+			ip = ipd;
+			port = ntohs(remaddr.sin_port);
+
+			return recvlen;
+		}
+	}
+	
+	return 0;
 }

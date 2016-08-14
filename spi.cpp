@@ -23,7 +23,7 @@ bool SPI::open(const string& path)
 	fd = ::open(path.c_str(), O_RDWR);
 	if (fd == -1)
 	{
-		perror("i2cOpen");
+		perror("spiOpen");
 		return false;
 	}
 	return true;
