@@ -16,4 +16,10 @@ std::string rtrim(const std::string& str, const std::string& chars = "\n\t\r ");
 std::string trim(const std::string& str, const std::string& chars = "\n\r\r ");
 std::string xorStrings(const std::string& text, const std::string& key);
 
+int toInt(const std::string& str);
+std::string toString(int val);
+std::string toBinStr(uint8_t val);
+void printBin(uint8_t val);
+void printBinln(uint8_t val);
+
 #endif

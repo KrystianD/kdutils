@@ -3,59 +3,32 @@
 
 #include <stdint.h>
 #include <string>
+#include <functional>
 using namespace std;
 
-class IEthernetDataListener
-{
-public:
-	virtual void onEthernetDataReceived(const string& ip, const void* buffer, int len) = 0;
-};
-
-class UdpSocket
-{
+class UdpSocket {
 public:
 	UdpSocket();
 	UdpSocket(int port);
 	~UdpSocket();
-	
+
 	bool init();
 	bool bind();
 	bool bind(int port);
 	void close();
 	bool process();
 
-	void setListener(IEthernetDataListener* listener)
-	{
-		m_listener = listener;
-	}
-	void setPort(int port)
-	{
-		m_port = port;
-	}
-	void setTimeout(int timeout)
-	{
-		m_timeout = timeout;
-	}
-	
-	bool send(const string& ip, uint16_t port, const void* data, int len);
-	int read(string& ip, uint16_t& port, void* data, int len, uint32_t timeout = 0);
-	
-	const string& getLastError() const
-	{
-		return m_lastErrorStr;
-	}
+	void setPort(int port) { m_port = port; }
 
-	int getFd() const { return m_sockfd; }
+	bool send(const char* ip, uint16_t port, const void* data, int len);
+	int recv(const char ip[20], uint16_t& port, void* data, int len, uint32_t timeout = 0xffffffff);
 
-	const string& getErrorString() const { return m_lastErrorStr; }
-	
+	int getFd() const { return fd; }
+
 private:
-	int m_sockfd;
-	
-	IEthernetDataListener *m_listener;
-	int m_port, m_timeout;
-	
-	string m_lastErrorStr;
+	int fd;
+
+	int m_port;
 };
 
 #endif
