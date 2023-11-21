@@ -14,13 +14,13 @@ uint32_t getTicksUS();
 }
 std::string getErrnoString();
 
-#ifndef WIN32
+#ifndef _WIN32
 int changeUidGid(int uid, gid_t gid);
 #endif
 
 std::vector<std::string> parseArgs(std::string str, int count);
 
-#ifndef WIN32
+#ifndef _WIN32
 char getch();
 char getche();
 #else

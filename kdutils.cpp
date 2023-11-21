@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#if !(defined(WIN32) || defined(_WIN32))
+#ifndef _WIN32
 #include <grp.h>
 #endif
 
@@ -28,7 +28,7 @@ uint32_t getTicksUS()
 }
 std::string getErrnoString()
 {
-#if defined(WIN32) || defined(_WIN32)
+#ifdef _WIN32
 	return "<noerr_win>";
 #else
 	char buf[256];
@@ -37,7 +37,7 @@ std::string getErrnoString()
 #endif
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 int changeUidGid(int uid, gid_t gid)
 {
 	if (setgid(gid) == -1)
@@ -151,32 +151,4 @@ std::vector<std::string> parseArgs(std::string str, int count)
 	return newParts;
 }
 
-// getch
-#ifndef WIN32
-#include <termios.h>
-#include <stdio.h>
 
-static char _getch(int echo)
-{
-	struct termios oldCfg, newCfg;
-
-	tcgetattr(0, &oldCfg);
-	newCfg = oldCfg;
-	newCfg.c_lflag &= ~ICANON;
-	newCfg.c_lflag &= echo ? ECHO : ~ECHO;
-	tcsetattr(0, TCSANOW, &newCfg);
-
-	char ch = getchar();
-
-	tcsetattr(0, TCSANOW, &oldCfg);
-	return ch;
-}
-char getch()
-{
-	return _getch(0);
-}
-char getche()
-{
-	return _getch(1);
-}
-#endif
